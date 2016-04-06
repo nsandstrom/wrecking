@@ -1,7 +1,7 @@
 #include <Arduino.h>
 class Modem_task{
 private:
-	enum Status {New, Pending, Done};
+	enum Status {New, Pending, Done, Failed};
 	Status status;
 	String data;
 	String reply;
