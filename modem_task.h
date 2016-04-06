@@ -1,15 +1,17 @@
+#include <Arduino.h>
 class Modem_task{
 private:
-	enum status {new, pending, done};
+	enum Status {New, Pending, Done};
+	Status status;
 	String data;
 	String reply;
 	enum task {get_time, send_data, send_status};
 public:
 	bool has_new();
-}
+};
 
 bool Modem_task::has_new (){
-	if ( status == new ) {
+	if( status == New ) {
 		return true;
 	}
 	return false;
