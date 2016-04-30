@@ -1,39 +1,39 @@
 /*
- * Demo_NHD0420CW-Ax3_SPI.ino
- *
- * Tutorial sketch for use of character OLED slim display family by Newhaven with Arduino Uno, without
- * using any library.  Models: NHD0420CW-Ax3, NHD0220CW-Ax3, NHD0216CW-Ax3. Controller: US2066
- * in this example, the display is connected to Arduino via SPI interface.
- *
- * Displays on the OLED alternately a 4-line message and a sequence of character "block".
- * This sketch assumes the use of a 4x20 display; if different, modify the values of the two variables
- * ROW_N e COLUMN_N.
- * The sketch uses the minimum possible of Arduino's pins; if you intend to use also /RES or /CS lines,
- * the related instructions are already present, it's sufficient to remove the comment markers.
- *
- * The circuit:
- * OLED pin 1 (Vss)    to Arduino pin ground
- * OLED pin 2 (VDD)    to Arduino pin 5V
- * OLED pin 3 (REGVDD) to Arduino pin 5V
- * OLED pin 4 to 6     to Vss ground
- * OLED pin 7 (SCLK)   to Arduino pin D13 (SCK)
- * OLED pin 8 (SID)    to Arduino pin D11 (MOSI)
- * OLED pin 9 (SOD)    to Arduino pin D12 (MISO) (optional, can be not connected)
- * OLED pin 10 to 14   to Vss ground
- * OLED pin 15 (/CS)   to Vss ground  (or to Arduino pin D2, in case of use of more than one display)
- * OLED pin 16 (/RES)  to Arduino pin Reset or VDD 5V (or to Arduino pin D3, to control reset by sw)
- * OLED pin 17 (BS0)   to Vss ground
- * OLED pin 18 (BS1)   to Vss ground
- * OLED pin 19 (BS2)   to Vss ground
- * OLED pin 20 (Vss)   to Vss ground
- *
- * Original example created by Newhaven Display International Inc.
- * Modified and adapted to Arduino Uno 30 Mar 2015 by Pasquale D'Antini
- * Modified 19 May 2015 by Pasquale D'Antini
- * Modified to use hardware SPI 1 April 2016 by Joakim Sandström
- *
- * This example code is in the public domain.
- */
+   Demo_NHD0420CW-Ax3_SPI.ino
+
+   Tutorial sketch for use of character OLED slim display family by Newhaven with Arduino Uno, without
+   using any library.  Models: NHD0420CW-Ax3, NHD0220CW-Ax3, NHD0216CW-Ax3. Controller: US2066
+   in this example, the display is connected to Arduino via SPI interface.
+
+   Displays on the OLED alternately a 4-line message and a sequence of character "block".
+   This sketch assumes the use of a 4x20 display; if different, modify the values of the two variables
+   ROW_N e COLUMN_N.
+   The sketch uses the minimum possible of Arduino's pins; if you intend to use also /RES or /CS lines,
+   the related instructions are already present, it's sufficient to remove the comment markers.
+
+   The circuit:
+   OLED pin 1 (Vss)    to Arduino pin ground
+   OLED pin 2 (VDD)    to Arduino pin 5V
+   OLED pin 3 (REGVDD) to Arduino pin 5V
+   OLED pin 4 to 6     to Vss ground
+   OLED pin 7 (SCLK)   to Arduino pin D13 (SCK)
+   OLED pin 8 (SID)    to Arduino pin D11 (MOSI)
+   OLED pin 9 (SOD)    to Arduino pin D12 (MISO) (optional, can be not connected)
+   OLED pin 10 to 14   to Vss ground
+   OLED pin 15 (/CS)   to Vss ground  (or to Arduino pin D2, in case of use of more than one display)
+   OLED pin 16 (/RES)  to Arduino pin Reset or VDD 5V (or to Arduino pin D3, to control reset by sw)
+   OLED pin 17 (BS0)   to Vss ground
+   OLED pin 18 (BS1)   to Vss ground
+   OLED pin 19 (BS2)   to Vss ground
+   OLED pin 20 (Vss)   to Vss ground
+
+   Original example created by Newhaven Display International Inc.
+   Modified and adapted to Arduino Uno 30 Mar 2015 by Pasquale D'Antini
+   Modified 19 May 2015 by Pasquale D'Antini
+   Modified to use hardware SPI 1 April 2016 by Joakim Sandström
+
+   This example code is in the public domain.
+*/
 
 // inslude the SPI library:
 #include <SPI.h>
@@ -44,7 +44,7 @@ const byte COLUMN_N = 20;             // Number of display columns
 
 //const byte RES = 3;                 // Arduino's pin assigned to the Reset line (optional, can be always high)
 
-const byte NOCONNECTION[21] ="   NO CONNECTION    ";
+const byte NOCONNECTION[21] = "   NO CONNECTION    ";
 
 const byte TEXT[4][21] = {"         Output 100%",
                           "                    ",
@@ -53,11 +53,11 @@ const byte TEXT[4][21] = {"         Output 100%",
                          };         // Strings to be displayed
 
 
-const byte DISPLAY_TEAM_NAMES[4][12] = {"Chaos       ",
+const byte DISPLAY_TEAM_NAMES[4][13] = {"Chaos       ",
                                         "Cybercom    ",
                                         "The cluster ",
                                         "Hjortkloe   "
-                                       };
+                                      };
 
 byte new_line[4] = {0x80, 0xA0, 0xC0, 0xE0};               // DDRAM address for each line of the display
 byte rows = 0x08;                     // Display mode: 1/3 lines or 2/4 lines; default 2/4 (0x08)
@@ -119,29 +119,14 @@ void displayOwner(void)
   command(new_line[1]);           //  moves the cursor to the first column of that line
   for (c = 0; c < 12; c++)  // One character at a time,
   {
-    switch (g_owner) {
-      case neutral:
-        break;
-      case kaos:
-        data(kaosLocation[c]);            //  displays the correspondig string
-        break;
-      case cybercom:
-        data(cybercomLocation[c]);            //  displays the correspondig string
-        break;
-      case klustret:
-        data(klustretLocation[c]);            //  displays the correspondig string
-        break;
-      case hjortkloe:
-        data(hjortkloeLocation[c]);            //  displays the correspondig string
-        break;
-    }
+    data(DISPLAY_TEAM_NAMES[global_owner][c]); 
   }
 }
 
 //displays the no connect screen
-void displayNoConnection(){
+void displayNoConnection() {
   byte c = 0;
-//  command(0x01);        // Clear display
+  //  command(0x01);        // Clear display
   delay(2);             // After a clear display, a minimum pause of 1-2 ms is required
   command(new_line[1]);           //  moves the cursor to the first column of that line
   for (c = 0; c < 20; c++)  // One character at a time,
@@ -214,3 +199,6 @@ void init_display(void)                      // INITIAL SETUP
     new_line[1] = 0xC0;             // DDRAM address for each line of the display (only for 2-line mode)
 }
 
+void display_update () {
+
+}

@@ -3,6 +3,11 @@
 
 SoftwareSerial ModemSerial(MODEM_PIN_ONE, MODEM_PIN_TWO);
 
-void setup_modem(){
+void init_modem(){
 
 }
+
+void modem(){
+  
+}
+

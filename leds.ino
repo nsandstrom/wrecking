@@ -1,6 +1,3 @@
-//Fix FastLed
-#include <FastLED.h>
-
 #define NUM_LEDS 300
 #define MAX_BRIGHT 255
 #define LOW_BRIGHT 16
@@ -36,6 +33,10 @@ void RedrawLeds() {
     redrawLeds = false;
     FastLED.show();
   }
+}
+
+void leds_update() {
+  
 }
 
 void AnimateLed() {
@@ -149,7 +150,7 @@ void FillSection (CHSV color, byte brightness, byte section) {
 
 void ChangeOwnerColor(void) {
   CHSV color;
-  switch (g_owner) {
+  switch (global_owner) {
     case neutral:
       ownerColor1 = colorNeutral;
       break;

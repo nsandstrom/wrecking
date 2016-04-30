@@ -1,8 +1,13 @@
 // Base station for wrecking
 #include "pinout.h"
 #include "modem_task.h"
+#include "datatypes.h"
+#include <FastLED.h>
+#include <Keypad.h>
 
 Modem_task modem_task ;
+
+Owner global_owner = neutral;
 
 void setup(){
 	init_station();
