@@ -1,9 +1,14 @@
-#define NUM_LEDS 300
+#define NUM_LEDS 32
 #define MAX_BRIGHT 255
 #define LOW_BRIGHT 16
+#define LEDS_MAX_FADE_BRIGHT 20
+#define LEDS_MIN_FADE_BRIGHT 4
 
-#define SECTIONS 4
+#define SECTIONS 2
 #define SECTION_LENGTH NUM_LEDS/SECTIONS
+
+#define LED_UPDATE_INTERVAL 30
+#define LED_FADE_INTERVAL 60
 
 //this variable keeps track if leds shall be redrawn
 bool redrawLeds = true;
@@ -12,41 +17,84 @@ bool redrawLeds = true;
 CRGB leds[NUM_LEDS];
 
 //define wrecker colors
+CHSV colorNeutral(0, 0, MAX_BRIGHT);
 CHSV colorKaos(0, 255, MAX_BRIGHT);
 CHSV colorCyberCom(160, 255, MAX_BRIGHT);
 CHSV colorKlustret(200, 255, MAX_BRIGHT);
 CHSV colorHjortkloe(32, 255, MAX_BRIGHT);
-CHSV colorNeutral(0, 0, MAX_BRIGHT);
 CHSV colorBlack(0, 0, 0);
-CHSV ownerColor1 = colorNeutral;
 
+CHSV led_colors[6] = {colorNeutral,
+                      colorKaos,
+                      colorCyberCom,
+                      colorKlustret,
+                      colorHjortkloe,
+                      colorBlack};
 
 void init_leds() {
   FastLED.addLeds<NEOPIXEL, LED_DATA_PIN>(leds, NUM_LEDS);
-  ownerColor1 = colorKaos;
-  FillAll(ownerColor1, LOW_BRIGHT);
+  FillAll(led_colors[global_owner], LOW_BRIGHT);
   FastLED.show();
 }
 
-void RedrawLeds() {
+void leds_update() {
+  static unsigned long led_animate_time;
+  switch (global_state)
+  {
+    case idle:  
+      if ((global_loop_start_time - led_animate_time) > LED_FADE_INTERVAL)
+      {
+        leds_fade();
+        led_animate_time = global_loop_start_time;
+      }
+      break;
+
+    case active:
+      if ((global_loop_start_time - led_animate_time) > LED_UPDATE_INTERVAL)
+      {
+        leds_animate_running();
+        led_animate_time = global_loop_start_time;
+      }
+      
+      break;
+
+    default:
+      break;
+  }
+
+
   if (redrawLeds) {
-    redrawLeds = false;
     FastLED.show();
+    redrawLeds = false;
   }
 }
 
-void leds_update() {
-  
+void leds_fade(){
+  static byte brightness = 0;
+  static bool count_up = true;
+
+  FillAll(led_colors[global_owner], brightness);
+
+  if (count_up){
+    brightness ++;
+  } else {
+    brightness --;
+  }
+  if( brightness == LEDS_MAX_FADE_BRIGHT){
+    count_up = false;
+  }else if ( brightness == LEDS_MIN_FADE_BRIGHT){
+    count_up = true;
+  }
 }
 
-void AnimateLed() {
+void leds_animate_running() {
   static int dot = 0;
   int preDot = dot + 1;
   int afterDot = dot - 1;
   int lastDot = dot - 2;
 
   //reset all colors
-  FillAll(ownerColor1, LOW_BRIGHT);
+  FillAll(led_colors[global_owner], LOW_BRIGHT);
 
   for (int section = 0; section < SECTIONS; section++) {
     int sectionOffset;
@@ -93,28 +141,26 @@ void AnimateLed() {
 
     //only draw preglow if within bounds
     if (preDot < SECTION_LENGTH) {
-      leds[sectionPredot] = ownerColor1;
+      leds[sectionPredot] = led_colors[global_owner];
       leds[sectionPredot] %= 100;
     }
 
     //only draw mainglow if within bounds
     if (dot < SECTION_LENGTH) {
-      leds[sectionDot] = ownerColor1;
+      leds[sectionDot] = led_colors[global_owner];
     }
 
     //only draw afterglow if within bounds
     if (afterDot >= 0) {
-      leds[sectionAfterDot] = ownerColor1;
+      leds[sectionAfterDot] = led_colors[global_owner];
       leds[sectionAfterDot] %= 100;
     }
 
     //only draw Lastdot if within bounds
     if (lastDot >= 0) {
-      leds[sectionLastDot] = ownerColor1;
+      leds[sectionLastDot] = led_colors[global_owner];
       leds[sectionLastDot] %= LOW_BRIGHT;
     }
-    
-
   }
 
   dot++;
@@ -146,27 +192,6 @@ void FillSection (CHSV color, byte brightness, byte section) {
 
   //redraw leds at the end of next loop
   redrawLeds = true;
-}
-
-void ChangeOwnerColor(void) {
-  CHSV color;
-  switch (global_owner) {
-    case neutral:
-      ownerColor1 = colorNeutral;
-      break;
-    case kaos:
-      ownerColor1 = colorKaos;
-      break;
-    case cybercom:
-      ownerColor1 = colorCyberCom;
-      break;
-    case klustret:
-      ownerColor1 = colorKlustret;
-      break;
-    case hjortkloe:
-      ownerColor1 = colorHjortkloe;
-      break;
-  }
 }
 
 void FlashLedRow() {

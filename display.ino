@@ -53,7 +53,8 @@ const byte TEXT[4][21] = {"         Output 100%",
                          };         // Strings to be displayed
 
 
-const byte DISPLAY_TEAM_NAMES[4][13] = {"Chaos       ",
+const byte DISPLAY_TEAM_NAMES[5][13] = {"            ",
+                                        "Chaos       ",
                                         "Cybercom    ",
                                         "The cluster ",
                                         "Hjortkloe   "
@@ -61,84 +62,6 @@ const byte DISPLAY_TEAM_NAMES[4][13] = {"Chaos       ",
 
 byte new_line[4] = {0x80, 0xA0, 0xC0, 0xE0};               // DDRAM address for each line of the display
 byte rows = 0x08;                     // Display mode: 1/3 lines or 2/4 lines; default 2/4 (0x08)
-// _______________________________________________________________________________________
-void command(byte c)                  // SUBROUTINE: PREPARES THE TRANSMISSION OF A COMMAND
-{
-  SPI.transfer(0x1F);
-
-  send_byte(c);                      // Transmits the byte
-}
-
-
-// _______________________________________________________________________________________
-void data(byte d)
-{
-  SPI.transfer(0x5F);
-
-  send_byte(d);
-}
-
-// _______________________________________________________________________________________
-void send_byte(byte tx_b)
-{
-  //Split the bytes into two and pad the last four bits with 0s
-  byte tx_b1 = tx_b & 0x0F;
-  byte tx_b2 = (tx_b >> 4) & 0x0F;
-
-  //Or together the bytes
-  int tx_int = (tx_b2 << 8) | tx_b1;
-
-  //transfer it
-  SPI.transfer16(tx_int);
-}
-
-// _______________________________________________________________________________________
-
-void output(void)                     // SUBROUTINE: DISPLAYS THE FOUR STRINGS, THEN THE SAME IN REVERSE ORDER
-{
-  byte r = 0;                        // Row index
-  byte c = 0;                        // Column index
-
-  command(0x01);                     // Clears display (and cursor home)
-  delay(2);                          // After a clear display, a minimum pause of 1-2 ms is required
-
-  for (r = 0; r < ROW_N; r++)        // One row at a time,
-  {
-    command(new_line[r]);           //  moves the cursor to the first column of that line
-    for (c = 0; c < COLUMN_N; c++)  // One character at a time,
-    {
-      data(TEXT[r][c]);            //  displays the correspondig string
-    }
-  }
-}
-
-// prints out the owner name on the display
-void displayOwner(void)
-{
-  byte c = 0;
-  command(new_line[1]);           //  moves the cursor to the first column of that line
-  for (c = 0; c < 12; c++)  // One character at a time,
-  {
-    data(DISPLAY_TEAM_NAMES[global_owner][c]); 
-  }
-}
-
-//displays the no connect screen
-void displayNoConnection() {
-  byte c = 0;
-  //  command(0x01);        // Clear display
-  delay(2);             // After a clear display, a minimum pause of 1-2 ms is required
-  command(new_line[1]);           //  moves the cursor to the first column of that line
-  for (c = 0; c < 20; c++)  // One character at a time,
-  {
-
-    data(NOCONNECTION[c]);            //  displays the correspondig string
-
-  }
-}
-
-// _______________________________________________________________________________________
-
 
 void init_display(void)                      // INITIAL SETUP
 {
@@ -200,5 +123,120 @@ void init_display(void)                      // INITIAL SETUP
 }
 
 void display_update () {
+  
+  switch (global_state)
+  {
+    case idle:
+      display_print("idle", 0, 0);      
+      break;
 
+    case active:
+      display_print("active", 0, 0);      
+      
+      break;
+
+    case capturing:
+      display_print("capturing", 0, 0);      
+      
+      break;
+
+    case waitForCoordinates:
+      display_print("waitForCoordinates", 0, 0);      
+      
+      break;
+
+    default:
+      break;
+  }
+  displayOwner();
 }
+
+// _______________________________________________________________________________________
+void command(byte c)                  // SUBROUTINE: PREPARES THE TRANSMISSION OF A COMMAND
+{
+  SPI.transfer(0x1F);
+
+  send_byte(c);                      // Transmits the byte
+}
+
+
+// _______________________________________________________________________________________
+void data(byte d)
+{
+  SPI.transfer(0x5F);
+
+  send_byte(d);
+}
+
+// _______________________________________________________________________________________
+void send_byte(byte tx_b)
+{
+  //Split the bytes into two and pad the last four bits with 0s
+  byte tx_b1 = tx_b & 0x0F;
+  byte tx_b2 = (tx_b >> 4) & 0x0F;
+
+  //Or together the bytes
+  int tx_int = (tx_b2 << 8) | tx_b1;
+
+  //transfer it
+  SPI.transfer16(tx_int);
+}
+
+// _______________________________________________________________________________________
+
+void output(void)                     // SUBROUTINE: DISPLAYS THE FOUR STRINGS, THEN THE SAME IN REVERSE ORDER
+{
+  byte r = 0;                        // Row index
+  byte c = 0;                        // Column index
+
+  command(0x01);                     // Clears display (and cursor home)
+  delay(2);                          // After a clear display, a minimum pause of 1-2 ms is required
+
+  for (r = 0; r < ROW_N; r++)        // One row at a time,
+  {
+    command(new_line[r]);           //  moves the cursor to the first column of that line
+    for (c = 0; c < COLUMN_N; c++)  // One character at a time,
+    {
+      data(TEXT[r][c]);            //  displays the correspondig string
+    }
+  }
+}
+
+void display_print(String text, byte row, byte start){
+  byte text_length = text.length();
+  command(new_line[row]+start);           //  moves the cursor to the first column of that line
+  for (byte c = 0; c < text_length; c++)  // One character at a time,
+  {
+    data(text[c]); 
+  }
+}
+
+// prints out the owner name on the display
+void displayOwner(void)
+{
+  byte c = 0;
+  command(new_line[1]);           //  moves the cursor to the first column of that line
+  for (c = 0; c < 12; c++)  // One character at a time,
+  {
+    data(DISPLAY_TEAM_NAMES[global_owner][c]); 
+  }
+}
+
+
+//displays the no connect screen
+void displayNoConnection() {
+  byte c = 0;
+  //  command(0x01);        // Clear display
+  delay(2);             // After a clear display, a minimum pause of 1-2 ms is required
+  command(new_line[1]);           //  moves the cursor to the first column of that line
+  for (c = 0; c < 20; c++)  // One character at a time,
+  {
+
+    data(NOCONNECTION[c]);            //  displays the correspondig string
+
+  }
+}
+
+// _______________________________________________________________________________________
+
+
