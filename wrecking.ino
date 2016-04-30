@@ -1,15 +1,25 @@
 // Base station for wrecking
-#include "setup_modem.h"
-#include "modem_config.h"
+#include "pinout.h"
 #include "modem_task.h"
-#include <SoftwareSerial.h>
 
-SoftwareSerial GPRS(modem_pin_one, modem_pin_two);
+Modem_task modem_task ;
 
 void setup(){
-
+	init_station();
+	init_display();
+	init_leds();
+	init_keypad();
+	init_modem();
 }
 
-void loop(){
 
+void loop(){
+	station();
+	modem();
+	display_update();
+	leds_update();
+}
+
+void init_station(){
+	//Empty until needed
 }

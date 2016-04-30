@@ -5,7 +5,7 @@ private:
 	Status status;
 	String data;
 	String reply;
-	enum task {get_time, send_data, send_status};
+	enum Task {get_time, send_data, send_status};
 public:
 	bool has_new();
 };
