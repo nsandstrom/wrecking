@@ -26,7 +26,6 @@ CHSV ownerColor1 = colorNeutral;
 
 void init_leds() {
   FastLED.addLeds<NEOPIXEL, LED_DATA_PIN>(leds, NUM_LEDS);
-  FastLED.show();
   ownerColor1 = colorKaos;
   FillAll(ownerColor1, LOW_BRIGHT);
   FastLED.show();
@@ -56,7 +55,7 @@ void AnimateLed() {
     int sectionLastDot;
 
     //First calculate dot position for the different section
-    //if odd section number, revverse flow
+    //if odd section number, reverse flow
     if (section & 0x01) {
       sectionOffset = (section + 1) * SECTION_LENGTH - 1;
 
