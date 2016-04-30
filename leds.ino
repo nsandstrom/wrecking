@@ -1,14 +1,14 @@
-#define NUM_LEDS 32
+#define NUM_LEDS 270
 #define MAX_BRIGHT 255
 #define LOW_BRIGHT 16
 #define LEDS_MAX_FADE_BRIGHT 20
 #define LEDS_MIN_FADE_BRIGHT 4
 
-#define SECTIONS 2
+#define SECTIONS 6
 #define SECTION_LENGTH NUM_LEDS/SECTIONS
 
-#define LED_UPDATE_INTERVAL 30
-#define LED_FADE_INTERVAL 60
+#define LED_UPDATE_INTERVAL 20
+#define LED_FADE_INTERVAL 100
 
 //this variable keeps track if leds shall be redrawn
 bool redrawLeds = true;
@@ -105,7 +105,7 @@ void leds_animate_running() {
 
     //First calculate dot position for the different section
     //if odd section number, reverse flow
-    if (section & 0x01) {
+    if (section == 2 || section == 3) {
       sectionOffset = (section + 1) * SECTION_LENGTH - 1;
 
       //preglow
@@ -148,6 +148,7 @@ void leds_animate_running() {
     //only draw mainglow if within bounds
     if (dot < SECTION_LENGTH) {
       leds[sectionDot] = led_colors[global_owner];
+//      leds[sectionDot-SECTION_LENGTH/2] = led_colors[global_owner];
     }
 
     //only draw afterglow if within bounds
