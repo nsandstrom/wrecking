@@ -23,3 +23,8 @@ void loop(){
 void init_station(){
 	//Empty until needed
 }
+
+void station() {
+  
+}
+

@@ -52,6 +52,13 @@ const byte TEXT[4][21] = {"         Output 100%",
                           "Long 34.67 E        "
                          };         // Strings to be displayed
 
+
+const byte DISPLAY_TEAM_NAMES[4][12] = {"Chaos       ",
+                                        "Cybercom    ",
+                                        "The cluster ",
+                                        "Hjortkloe   "
+                                       };
+
 byte new_line[4] = {0x80, 0xA0, 0xC0, 0xE0};               // DDRAM address for each line of the display
 byte rows = 0x08;                     // Display mode: 1/3 lines or 2/4 lines; default 2/4 (0x08)
 // _______________________________________________________________________________________
