@@ -1,6 +1,7 @@
 //Fix FastLed
+#include <FastLED.h>
+
 #define NUM_LEDS 300
-#define DATA_PIN A0
 #define MAX_BRIGHT 255
 #define LOW_BRIGHT 16
 
@@ -23,8 +24,8 @@ CHSV colorBlack(0, 0, 0);
 CHSV ownerColor1 = colorNeutral;
 
 
-void SetupLED() {
-  FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
+void init_leds() {
+  FastLED.addLeds<NEOPIXEL, LED_DATA_PIN>(leds, NUM_LEDS);
   FastLED.show();
   ownerColor1 = colorKaos;
   FillAll(ownerColor1, LOW_BRIGHT);

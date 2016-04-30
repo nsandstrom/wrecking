@@ -148,7 +148,7 @@ void displayNoConnection(){
 // _______________________________________________________________________________________
 
 
-void setupDisplay(void)                      // INITIAL SETUP
+void init_display(void)                      // INITIAL SETUP
 {
   //   pinMode(RES, OUTPUT);            // Initializes Arduino pin for the Reset line (optional)
   //   digitalWrite(RES, HIGH);         // Sets HIGH the Reset line of the display (optional, can be always high)
