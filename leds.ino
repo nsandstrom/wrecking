@@ -1,13 +1,13 @@
-#define NUM_LEDS 270
-#define MAX_BRIGHT 255
-#define LOW_BRIGHT 16
+#define NUM_LEDS 32
+#define MAX_BRIGHT 64
+#define LOW_BRIGHT 32
 #define LEDS_MAX_FADE_BRIGHT 20
 #define LEDS_MIN_FADE_BRIGHT 4
 
-#define SECTIONS 6
+#define SECTIONS 4
 #define SECTION_LENGTH NUM_LEDS/SECTIONS
 
-#define LED_UPDATE_INTERVAL 20
+#define LED_UPDATE_INTERVAL 200
 #define LED_FADE_INTERVAL 100
 
 //this variable keeps track if leds shall be redrawn
@@ -29,7 +29,8 @@ CHSV led_colors[6] = {colorNeutral,
                       colorCyberCom,
                       colorKlustret,
                       colorHjortkloe,
-                      colorBlack};
+                      colorBlack
+                     };
 
 void init_leds() {
   FastLED.addLeds<NEOPIXEL, LED_DATA_PIN>(leds, NUM_LEDS);
@@ -41,7 +42,7 @@ void leds_update() {
   static unsigned long led_animate_time;
   switch (global_state)
   {
-    case idle:  
+    case idle:
       if ((global_loop_start_time - led_animate_time) > LED_FADE_INTERVAL)
       {
         leds_fade();
@@ -55,7 +56,7 @@ void leds_update() {
         leds_animate_running();
         led_animate_time = global_loop_start_time;
       }
-      
+
       break;
 
     default:
@@ -69,29 +70,38 @@ void leds_update() {
   }
 }
 
-void leds_fade(){
+void leds_fade() {
   static byte brightness = 0;
   static bool count_up = true;
 
   FillAll(led_colors[global_owner], brightness);
 
-  if (count_up){
+  if (count_up) {
     brightness ++;
   } else {
     brightness --;
   }
-  if( brightness == LEDS_MAX_FADE_BRIGHT){
+  if ( brightness == LEDS_MAX_FADE_BRIGHT) {
     count_up = false;
-  }else if ( brightness == LEDS_MIN_FADE_BRIGHT){
+  } else if ( brightness == LEDS_MIN_FADE_BRIGHT) {
     count_up = true;
   }
 }
 
 void leds_animate_running() {
   static int dot = 0;
-  int preDot = dot + 1;
-  int afterDot = dot - 1;
-  int lastDot = dot - 2;
+  int preDot;
+  int afterDot;
+
+  //set pre and after-dot
+  preDot = dot + 1;
+  afterDot = dot - 1;
+  //if dot is at the last position, set predot to the first
+  if (dot >= (SECTION_LENGTH - 1))
+    preDot = 0;
+  //if dot is at the first position, set afterdot to the last
+  else if (dot == 0)
+    afterDot = SECTION_LENGTH - 1;
 
   //reset all colors
   FillAll(led_colors[global_owner], LOW_BRIGHT);
@@ -101,12 +111,11 @@ void leds_animate_running() {
     int sectionDot;
     int sectionPredot;
     int sectionAfterDot;
-    int sectionLastDot;
 
     //First calculate dot position for the different section
     //if odd section number, reverse flow
     if (section == 2 || section == 3) {
-      sectionOffset = (section + 1) * SECTION_LENGTH - 1;
+      sectionOffset = ((section + 1) * SECTION_LENGTH) - 1;
 
       //preglow
       sectionPredot = sectionOffset - preDot;
@@ -116,9 +125,6 @@ void leds_animate_running() {
 
       //afterglow
       sectionAfterDot = sectionOffset - afterDot;
-
-      //lastGlow
-      sectionLastDot = sectionOffset - lastDot;
     }
     //if even section number, let the flow be normal
     else {
@@ -132,40 +138,21 @@ void leds_animate_running() {
 
       //afterglow
       sectionAfterDot = sectionOffset + afterDot;
-
-      //lastGlow
-      sectionLastDot = sectionOffset + lastDot;
     }
 
     //Then update LEDS
+    leds[sectionPredot] = led_colors[global_owner];
+    leds[sectionPredot] %= 100;
 
-    //only draw preglow if within bounds
-    if (preDot < SECTION_LENGTH) {
-      leds[sectionPredot] = led_colors[global_owner];
-      leds[sectionPredot] %= 100;
-    }
+    leds[sectionDot] = led_colors[global_owner];
 
-    //only draw mainglow if within bounds
-    if (dot < SECTION_LENGTH) {
-      leds[sectionDot] = led_colors[global_owner];
-//      leds[sectionDot-SECTION_LENGTH/2] = led_colors[global_owner];
-    }
-
-    //only draw afterglow if within bounds
-    if (afterDot >= 0) {
-      leds[sectionAfterDot] = led_colors[global_owner];
-      leds[sectionAfterDot] %= 100;
-    }
-
-    //only draw Lastdot if within bounds
-    if (lastDot >= 0) {
-      leds[sectionLastDot] = led_colors[global_owner];
-      leds[sectionLastDot] %= LOW_BRIGHT;
-    }
+    leds[sectionAfterDot] = led_colors[global_owner];
+    leds[sectionAfterDot] %= 100;
   }
 
+  //increment and wrap dot
   dot++;
-  if (dot > SECTION_LENGTH)
+  if (dot >= SECTION_LENGTH)
     dot = 0;
 
   //redraw leds at the end of next loop

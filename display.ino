@@ -127,28 +127,60 @@ void display_update () {
   switch (global_state)
   {
     case idle:
-      display_print("idle", 0, 0);      
+      display_print_value(global_next_round_countdown, 3, 2, 0);  
+    
       break;
 
     case active:
-      display_print("active", 0, 0);      
-      
+      display_print_value(global_boost, 3, 0, 16); 
       break;
 
     case capturing:
-      display_print("capturing", 0, 0);      
+      display_print_value(global_capture_countdown, 6, 2, 14);
       
       break;
 
-    case waitForCoordinates:
-      display_print("waitForCoordinates", 0, 0);      
+    case waitForCoordinates: 
       
       break;
 
     default:
       break;
   }
-  displayOwner();
+}
+
+// sets display values
+void display_enter_state(){
+
+  command(0x01);        // Clear display
+  delay(2);             // After a clear display, a minimum pause of 1-2 ms is required
+
+  switch(global_state)
+  {
+    case idle:
+      display_print("NO CONNECTION!", 0, 3);
+      display_print("Time to next window:", 1,0);
+      break;
+
+    case active:
+      display_print("Output:    %", 0, 8);
+      display_print("Target:", 1, 0);
+      displayOwner();
+      break;
+
+    case capturing:
+      display_print("Reinitializing", 1, 3);      
+      display_print("Time left:", 2, 0);      
+      break;
+
+    case waitForCoordinates:
+      display_print("Enter coordinates:", 1, 0);      
+      
+      break;
+
+    default:
+      break;
+  }
 }
 
 // _______________________________________________________________________________________
@@ -202,6 +234,24 @@ void output(void)                     // SUBROUTINE: DISPLAYS THE FOUR STRINGS, 
   }
 }
 
+//displays a right-adjusted value
+void display_print_value(int value, byte number_of_digits, byte row, byte start){
+  String value_string;
+  byte offset;
+  byte text_length = text.length();
+
+  value_string = String(value);
+  offset = number_of_digits - value_string.length();
+  display_print(value_string, row, start + offset); 
+  command(new_line[row]+start+ offset);           //  moves the cursor to the first column of that line
+  
+
+  for (byte c = 0; c < text_length; c++)  // One character at a time,
+  {
+    data(value_string[c]); 
+  }
+}
+
 void display_print(String text, byte row, byte start){
   byte text_length = text.length();
   command(new_line[row]+start);           //  moves the cursor to the first column of that line
@@ -215,28 +265,9 @@ void display_print(String text, byte row, byte start){
 void displayOwner(void)
 {
   byte c = 0;
-  command(new_line[1]);           //  moves the cursor to the first column of that line
+  command(new_line[1]+8);   //  moves the cursor to the eight column of the second line
   for (c = 0; c < 12; c++)  // One character at a time,
   {
     data(DISPLAY_TEAM_NAMES[global_owner][c]); 
   }
 }
-
-
-//displays the no connect screen
-void displayNoConnection() {
-  byte c = 0;
-  //  command(0x01);        // Clear display
-  delay(2);             // After a clear display, a minimum pause of 1-2 ms is required
-  command(new_line[1]);           //  moves the cursor to the first column of that line
-  for (c = 0; c < 20; c++)  // One character at a time,
-  {
-
-    data(NOCONNECTION[c]);            //  displays the correspondig string
-
-  }
-}
-
-// _______________________________________________________________________________________
-
-

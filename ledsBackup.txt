@@ -1,0 +1,85 @@
+
+void leds_animate_running() {
+  static int dot = 0;
+  int preDot = dot + 1;
+  int afterDot = dot - 1;
+  int lastDot = dot - 2;
+
+  //reset all colors
+  FillAll(led_colors[global_owner], LOW_BRIGHT);
+
+  for (int section = 0; section < SECTIONS; section++) {
+    int sectionOffset;
+    int sectionDot;
+    int sectionPredot;
+    int sectionAfterDot;
+    int sectionLastDot;
+
+    //First calculate dot position for the different section
+    //if odd section number, reverse flow
+    if (section == 2 || section == 3) {
+      sectionOffset = (section + 1) * SECTION_LENGTH - 1;
+
+      //preglow
+      sectionPredot = sectionOffset - preDot;
+
+      //mainGLow
+      sectionDot = sectionOffset - dot;
+
+      //afterglow
+      sectionAfterDot = sectionOffset - afterDot;
+
+      //lastGlow
+      sectionLastDot = sectionOffset - lastDot;
+    }
+    //if even section number, let the flow be normal
+    else {
+      sectionOffset = section * SECTION_LENGTH;
+
+      //preglow
+      sectionPredot = sectionOffset + preDot;
+
+      //mainGLow
+      sectionDot = sectionOffset + dot;
+
+      //afterglow
+      sectionAfterDot = sectionOffset + afterDot;
+
+      //lastGlow
+      sectionLastDot = sectionOffset + lastDot;
+    }
+
+    //Then update LEDS
+
+    //only draw preglow if within bounds
+    if (preDot < SECTION_LENGTH) {
+      leds[sectionPredot] = led_colors[global_owner];
+      leds[sectionPredot] %= 100;
+    }
+
+    //only draw mainglow if within bounds
+    if (dot < SECTION_LENGTH) {
+      leds[sectionDot] = led_colors[global_owner];
+//      leds[sectionDot-SECTION_LENGTH/2] = led_colors[global_owner];
+    }
+
+    //only draw afterglow if within bounds
+    if (afterDot >= 0) {
+      leds[sectionAfterDot] = led_colors[global_owner];
+      leds[sectionAfterDot] %= 100;
+    }
+
+    //only draw Lastdot if within bounds
+    if (lastDot >= 0) {
+      leds[sectionLastDot] = led_colors[global_owner];
+      leds[sectionLastDot] %= LOW_BRIGHT;
+    }
+  }
+
+  dot++;
+  if (dot > SECTION_LENGTH)
+    dot = 0;
+
+  //redraw leds at the end of next loop
+  redrawLeds = true;
+}
