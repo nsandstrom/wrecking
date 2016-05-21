@@ -21,6 +21,8 @@ int global_next_round_countdown = 0;
 int global_capture_countdown = 0;
 byte global_boost = 97;
 
+int global_input_coordinates = 0;
+
 void setup(){
 	init_station();
 	init_display();
@@ -58,6 +60,24 @@ void init_station(){
 
 void station() {
 	debug_keypad_switch_state();
+  switch (global_state)
+  {
+    case idle:
+      break;
+
+    case active:
+      break;
+
+    case capturing:
+      if (global_capture_countdown == 0)
+      {
+        global_next_state = waitForCoordinates;
+      }
+      break;
+
+    case waitForCoordinates:
+      break;
+  }
 }
 
 void update_state(){
@@ -65,9 +85,21 @@ void update_state(){
 	//do state specific enter tasks
 	switch (global_next_state)
 	{
+    case idle:
+      break;
+
+    case active:
+      leds_reset_broken_sections();
+      break;
+
 		case capturing:
 			global_capture_countdown = CAPTURE_TIME;
 			break;
+
+    case waitForCoordinates:
+      leds_turn_off_all();
+      break;
+
 	}
 
   global_state = global_next_state;
