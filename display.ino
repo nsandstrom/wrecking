@@ -164,8 +164,8 @@ void display_enter_state(){
       break;
 
     case waitForCoordinates:
-      display_print("Reinitialization", 0, 2);
-      display_print("completed!", 1, 5);      
+      display_print("Select new landing", 0, 0);      
+      display_print("zone:", 1, 0);      
       
       display_print("1.", 2, 0);
       display_print(DISPLAY_TEAM_NAME[1], 2,2);     

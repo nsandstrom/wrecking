@@ -76,6 +76,7 @@ void station() {
       break;
 
     case waitForCoordinates:
+      keypad_select_owner();
       break;
   }
 }
@@ -117,6 +118,35 @@ void update_timers(){
   }
 }
 
+void keypad_select_owner(){
+  char key = getButton();
+  bool newOwnerSelected = true;
+  if (key) // Check for a valid key.
+  {
+    switch (key)
+    {
+      case '1':
+        global_owner = kaos;
+        break;
+      case '2':
+        global_owner = cybercom;
+        break;
+      case '3':
+        global_owner = klustret;
+        break;
+      case '4':
+        global_owner = hjortkloe;
+        break;
+      default:
+        newOwnerSelected = false;
+        break;
+    }
+    if (newOwnerSelected){
+      global_next_state = active;
+    }
+  }
+}
+
 void debug_keypad_switch_state(){
   char key = getButton();
   if (key) // Check for a valid key.
@@ -134,18 +164,6 @@ void debug_keypad_switch_state(){
         break;
       case 'D':
         global_next_state = waitForCoordinates;
-        break;
-      case '1':
-        global_owner = kaos;
-        break;
-      case '2':
-        global_owner = cybercom;
-        break;
-      case '3':
-        global_owner = klustret;
-        break;
-      case '4':
-        global_owner = hjortkloe;
         break;
       default:
         break;
