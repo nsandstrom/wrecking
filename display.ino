@@ -44,20 +44,11 @@ const byte COLUMN_N = 20;             // Number of display columns
 
 //const byte RES = 3;                 // Arduino's pin assigned to the Reset line (optional, can be always high)
 
-const byte NOCONNECTION[21] = "   NO CONNECTION    ";
-
-const byte TEXT[4][21] = {"         Output 100%",
-                          "                    ",
-                          "Lat  59.04 N        ",
-                          "Long 34.67 E        "
-                         };         // Strings to be displayed
-
-
-const byte DISPLAY_TEAM_NAMES[5][13] = {"            ",
-                                        "Chaos       ",
-                                        "Cybercom    ",
-                                        "The cluster ",
-                                        "Hjortkloe   "
+const String DISPLAY_TEAM_NAME[5] = {"       ",
+                                       "Chaos  ",
+                                       "CyberCo",
+                                       "Cluster",
+                                       "HKM    "
                                       };
 
 byte new_line[4] = {0x80, 0xA0, 0xC0, 0xE0};               // DDRAM address for each line of the display
@@ -127,28 +118,71 @@ void display_update () {
   switch (global_state)
   {
     case idle:
-      display_print("idle", 0, 0);      
+      display_print_value(global_next_round_countdown, 3, 2, 0);  
+    
       break;
 
     case active:
-      display_print("active", 0, 0);      
-      
+      display_print_value(global_boost, 3, 0, 16); 
       break;
 
     case capturing:
-      display_print("capturing", 0, 0);      
+      display_print_value(global_capture_countdown, 3, 2, 17);
       
       break;
 
-    case waitForCoordinates:
-      display_print("waitForCoordinates", 0, 0);      
-      
+    case waitForCoordinates: 
       break;
 
     default:
       break;
   }
-  displayOwner();
+}
+
+// sets display values
+void display_enter_state(){
+
+  command(0x01);        // Clear display
+  delay(2);             // After a clear display, a minimum pause of 1-2 ms is required
+
+  switch(global_state)
+  {
+    case idle:
+      display_print("NO CONNECTION!", 0, 3);
+      display_print("Time to next window:", 1,0);
+      break;
+
+    case active:
+      display_print("Output:    %", 0, 8);
+      display_print("Target:", 1, 0);
+      display_print(DISPLAY_TEAM_NAME[global_owner], 1,8);
+      break;
+
+    case capturing:
+      display_print("Reinitializing", 1, 3);      
+      display_print("Time left:", 2, 0);      
+      break;
+
+    case waitForCoordinates:
+      display_print("Select new landing", 0, 0);      
+      display_print("zone:", 1, 0);      
+      
+      display_print("1.", 2, 0);
+      display_print(DISPLAY_TEAM_NAME[1], 2,2);     
+      display_print("2.", 3, 0);
+      display_print(DISPLAY_TEAM_NAME[2], 3,2);
+
+      display_print("3.", 2, 10);
+      display_print(DISPLAY_TEAM_NAME[3], 2,12);
+      display_print("4.", 3, 10);
+      display_print(DISPLAY_TEAM_NAME[4], 3,12);
+
+
+      break;
+
+    default:
+      break;
+  }
 }
 
 // _______________________________________________________________________________________
@@ -184,21 +218,21 @@ void send_byte(byte tx_b)
 
 // _______________________________________________________________________________________
 
-void output(void)                     // SUBROUTINE: DISPLAYS THE FOUR STRINGS, THEN THE SAME IN REVERSE ORDER
-{
-  byte r = 0;                        // Row index
-  byte c = 0;                        // Column index
+//displays a right-adjusted value
+void display_print_value(int value, byte number_of_digits, byte row, byte start){
+  String value_string;
+  byte offset;
 
-  command(0x01);                     // Clears display (and cursor home)
-  delay(2);                          // After a clear display, a minimum pause of 1-2 ms is required
+  value_string = String(value);
+  offset = number_of_digits - value_string.length();
+  command(new_line[row]+start);           //  moves the cursor to the first column of that line
 
-  for (r = 0; r < ROW_N; r++)        // One row at a time,
+  for (byte c = 0; c < number_of_digits; c++)  // One character at a time,
   {
-    command(new_line[r]);           //  moves the cursor to the first column of that line
-    for (c = 0; c < COLUMN_N; c++)  // One character at a time,
-    {
-      data(TEXT[r][c]);            //  displays the correspondig string
-    }
+    if (c < offset)
+      data(' ');
+    else
+      data(value_string[c-offset]); 
   }
 }
 
@@ -210,33 +244,3 @@ void display_print(String text, byte row, byte start){
     data(text[c]); 
   }
 }
-
-// prints out the owner name on the display
-void displayOwner(void)
-{
-  byte c = 0;
-  command(new_line[1]);           //  moves the cursor to the first column of that line
-  for (c = 0; c < 12; c++)  // One character at a time,
-  {
-    data(DISPLAY_TEAM_NAMES[global_owner][c]); 
-  }
-}
-
-
-//displays the no connect screen
-void displayNoConnection() {
-  byte c = 0;
-  //  command(0x01);        // Clear display
-  delay(2);             // After a clear display, a minimum pause of 1-2 ms is required
-  command(new_line[1]);           //  moves the cursor to the first column of that line
-  for (c = 0; c < 20; c++)  // One character at a time,
-  {
-
-    data(NOCONNECTION[c]);            //  displays the correspondig string
-
-  }
-}
-
-// _______________________________________________________________________________________
-
-
