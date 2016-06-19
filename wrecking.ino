@@ -10,7 +10,7 @@
 
 #define DEBUG
 
-Modem_task modem_task ;
+Modem_task modem_task;
 
 Owner global_owner = neutral;
 States global_state = idle; 
@@ -70,12 +70,17 @@ void station() {
       break;
 
     case active:
-      debug_keypad_switch_state();
+      #ifdef DEBUG 
+    	debug_keypad_switch_state(); 
+    	#endif
       break;
 
     case capturing:
-      debug_keypad_switch_state();
-      if (global_capture_countdown == 0)
+      #ifdef DEBUG 
+    	debug_keypad_switch_state(); 
+    	#endif
+
+      if (global_capture_countdown <= 0)
       {
         global_next_state = waitForCoordinates;
       }
@@ -83,6 +88,12 @@ void station() {
 
     case waitForCoordinates:
       keypad_select_owner();
+      break;
+
+    case changeOwner:
+      if (modem_task.completed()){
+      	global_next_state = active;
+      }
       break;
   }
 }
@@ -107,6 +118,10 @@ void update_state(){
       leds_turn_off_all();
       break;
 
+    case changeOwner:
+      // start owner change using task modem_task
+    	modem_task.setOwner(global_owner);
+      break;
 	}
 
   global_state = global_next_state;
@@ -114,7 +129,6 @@ void update_state(){
 }
 
 void update_timers(){
-  
   if ((global_loop_start_time - global_one_second_timer) > ONE_SECOND)
   {
   	debug_update_boost();
@@ -148,7 +162,7 @@ void keypad_select_owner(){
         break;
     }
     if (newOwnerSelected){
-      global_next_state = active;
+      global_next_state = changeOwner;
     }
   }
 }
