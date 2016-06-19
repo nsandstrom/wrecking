@@ -59,16 +59,19 @@ void init_station(){
 }
 
 void station() {
-	debug_keypad_switch_state();
   switch (global_state)
   {
     case idle:
+      debug_keypad_switch_state();
+      debug_keypad_switch_state();
       break;
 
     case active:
+      debug_keypad_switch_state();
       break;
 
     case capturing:
+      debug_keypad_switch_state();
       if (global_capture_countdown == 0)
       {
         global_next_state = waitForCoordinates;
