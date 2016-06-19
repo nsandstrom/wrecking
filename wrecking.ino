@@ -8,6 +8,8 @@
 #define ONE_SECOND 1000
 #define CAPTURE_TIME 60
 
+#define DEBUG
+
 Modem_task modem_task ;
 
 Owner global_owner = neutral;
@@ -62,8 +64,9 @@ void station() {
   switch (global_state)
   {
     case idle:
-      debug_keypad_switch_state();
-      debug_keypad_switch_state();
+      #ifdef DEBUG 
+    	debug_keypad_switch_state(); 
+    	#endif
       break;
 
     case active:
