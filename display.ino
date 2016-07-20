@@ -180,6 +180,13 @@ void display_enter_state(){
 
       break;
 
+    case changeOwner:
+      display_print("Uploading new ", 0, 0);      
+      display_print("coordinates", 1, 0);      
+      display_print("Please wait ...", 2, 2);      
+      break;
+
+
     default:
       break;
   }

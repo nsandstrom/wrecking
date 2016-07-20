@@ -26,7 +26,8 @@ bool Modem_task::has_new (){
 
 //For main code
 bool Modem_task::completed (){
-	false;
+	delay(1000);
+	return true;
 }
 
 void Modem_task::setOwner (enum Owner) {

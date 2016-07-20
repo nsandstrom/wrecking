@@ -6,7 +6,7 @@
 #include <Keypad.h>
 
 #define ONE_SECOND 1000
-#define CAPTURE_TIME 60
+#define CAPTURE_TIME 6
 
 #define DEBUG
 
