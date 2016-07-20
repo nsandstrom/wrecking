@@ -1,4 +1,6 @@
 //Modem pins
+#define MODEM_PIN_ONE A1
+#define MODEM_PIN_TWO A1
 #define MODEM_PIN_RST A3
 #define MODEM_PIN_TX A2
 #define MODEM_PIN_RX A1
@@ -14,7 +16,7 @@
 #define KEYPAD_COL3 5
 
 //LED pins
-#define LED_DATA_PIN A6
+#define LED_DATA_PIN 1
 
 //Display pins
 //Uses SPI

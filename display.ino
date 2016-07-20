@@ -148,24 +148,24 @@ void display_enter_state(){
   switch(global_state)
   {
     case idle:
-      display_print("NO CONNECTION!", 0, 3);
-      display_print("Time to next window:", 1,0);
+      display_print(F("NO CONNECTION!"), 0, 3);
+      display_print(F("Time to next window:"), 1,0);
       break;
 
     case active:
-      display_print("Output:    %", 0, 8);
-      display_print("Target:", 1, 0);
+      display_print(F("Output:    %"), 0, 8);
+      display_print(F("Target:"), 1, 0);
       display_print(DISPLAY_TEAM_NAME[global_owner], 1,8);
       break;
 
     case capturing:
-      display_print("Reinitializing", 1, 3);      
-      display_print("Time left:", 2, 0);      
+      display_print(F("Reinitializing"), 1, 3);      
+      display_print(F("Time left:"), 2, 0);      
       break;
 
     case waitForCoordinates:
-      display_print("Select new landing", 0, 0);      
-      display_print("zone:", 1, 0);      
+      display_print(F("Select new landing"), 0, 0);      
+      display_print(F("zone:"), 1, 0);      
       
       display_print("1.", 2, 0);
       display_print(DISPLAY_TEAM_NAME[1], 2,2);     
@@ -181,9 +181,9 @@ void display_enter_state(){
       break;
 
     case changeOwner:
-      display_print("Uploading new ", 0, 0);      
-      display_print("coordinates", 1, 0);      
-      display_print("Please wait ...", 2, 2);      
+      display_print(F("Uploading new "), 0, 0);      
+      display_print(F("coordinates"), 1, 0);      
+      display_print(F("Please wait ..."), 2, 2);      
       break;
 
 

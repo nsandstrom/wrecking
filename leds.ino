@@ -1,8 +1,8 @@
-#define NUM_LEDS 32
+#define NUM_LEDS 150
 #define MAX_BRIGHT 255
 #define FLASH_BRIGHT 127
 #define LOW_BRIGHT 32
-#define LEDS_MAX_FADE_BRIGHT 20
+#define LEDS_MAX_FADE_BRIGHT 32
 #define LEDS_MIN_FADE_BRIGHT 4
 
 #define SECTIONS 4
