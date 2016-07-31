@@ -2,6 +2,7 @@
 #include "pinout.h"
 #include "datatypes.h"
 #include "modem_task.h"
+#include "secrets.h"
 #include <FastLED.h>
 #include <Keypad.h>
 
