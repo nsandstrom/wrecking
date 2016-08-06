@@ -1,15 +1,24 @@
 #include <Arduino.h>
+enum Modem_Tasks {get_time, get_boost, set_owner, send_status};
+
 class Modem_task {
 private:
-	enum Status {New, Pending, Done, Failed};
-	Status status;
-	String data;
+	enum Status {New, Pending, Done, Failed, None};
+	Status status = None;
 	String reply;
-	enum Task {get_time, send_data, send_status};
+	
+	
 public:
 	bool has_new();
+	bool begin_task();
+	bool complete_task();
+	bool pending();
 	bool completed ();
-	void setOwner (enum Owner);
+	void setOwner (int owner);
+	String data;
+	
+	Modem_Tasks task;
+	
 };
 
 
@@ -21,15 +30,35 @@ bool Modem_task::has_new (){
 	return false;
 }
 
+bool Modem_task::begin_task (){
+	status = Pending;
+}
+
+bool Modem_task::complete_task (){
+	status = Done;
+}
+
 
 
 
 //For main code
 bool Modem_task::completed (){
-	delay(1000);
-	return true;
+	if (status == Done){
+		return true;
+	}
+	return false;
 }
 
-void Modem_task::setOwner (enum Owner) {
+bool Modem_task::pending (){
+	if (status == Pending){
+		return true;
+	}
+	return false;
+}
+
+void Modem_task::setOwner (int owner) {
+	task = set_owner;
+	data = (String)owner;
+	status = New;
 	//change Status and Task
 } 

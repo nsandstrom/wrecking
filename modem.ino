@@ -4,9 +4,9 @@
 #define GRPS_BAUD 38400
 #define SERIAL_BAUD 115200
 
-#define CHECK_CONNECTION_INTERVAL 60000
+#define CHECK_CONNECTION_INTERVAL 600000
 
-#define SERIAL_DEBUG
+// #define SERIAL_DEBUG
 #ifdef SERIAL_DEBUG
  #define DEBUG_PRINT(x)  Serial.println (x)
 #else
@@ -29,7 +29,9 @@ enum Gprs_responses
 	Accepted,
 	None,
 	Message,
-	IP
+	IP,
+	Boost,
+	Time
 };
 
 void init_modem(){
@@ -44,29 +46,42 @@ void init_modem(){
 		Serial.println(F("Serial interface started"));
 	#endif
 	DEBUG_PRINT(F("GPRS interface started"));
-	
-	readBack(None);
-	for (int i=1; i <= 10; i++){
-		GPRS.write("AT\r\n");
-		delay(1);
+
+	bool init_completed = false;
+	unsigned long timeout = 0;
+
+	while(!init_completed){
+		lock_interrupts();	
+		readBack(None);
+		for (int i=1; i <= 10; i++){
+			GPRS.write("AT\r\n");
+			readBack(None);
+			delay(1);
+		}
+
+		delay(5000);
+		readBack(None);
+		DEBUG_PRINT(F("Check AT"));	
+		for (int i=1; i <= 3; i++){
+			GPRS.println("AT");
+		  	while (readBack(Any) != 1);
+		}
+		
+
+		String Carrier = getCarrier();
+		DEBUG_PRINT((String)F("Post getcarrier: ") + Carrier);
+		APN = getAPN(Carrier);
+		DEBUG_PRINT((String)F("Apn: ") + APN);
+		delay(2000);
+		readBack(None);
+		readBack(None);
+		readBack(None);
+
+		unlock_interrupts();
+
+		DEBUG_PRINT(F("Modem init completed"));
+		init_completed = true;
 	}
-
-	delay(5000);
-
-	DEBUG_PRINT(F("Check AT"));
-	lock_interrupts();
-	for (int i=1; i <= 3; i++){
-		GPRS.println("AT");
-	  	while (readBack(Any) != 1);
-	}
-	unlock_interrupts();
-
-	String Carrier = getCarrier();
-	DEBUG_PRINT((String)F("Post getcarrier: ") + Carrier);
-	APN = getAPN(Carrier);
-	DEBUG_PRINT((String)F("Apn: ") + APN);
-
-
 }
 
 void modem(){
@@ -79,9 +94,16 @@ void modem(){
 		wait_untill = millis() + CHECK_CONNECTION_INTERVAL;
 	}
 
-	if (GPRS_online){
-		task_set_owner();
+	if (modem_task.has_new()){
+		DEBUG_PRINT("there is new task");
+		modem_task.begin_task();
+	}
 
+	if (GPRS_online){
+		
+		if (modem_task.pending()){
+			task_send_data(modem_task.data);			
+		}
 	}
 	else{
 		task_connect();
@@ -92,7 +114,7 @@ void task_nothing(){
 }
 
 void task_connect(){
-	static byte state = 0, next_state = 8, retry_state = 0, error_count = 5;
+	static byte state = 0, next_state = 8, retry_state = 0, error_count = 5, answer = 0;
 	static Gprs_responses expectAnswer = None;
 	static unsigned long wait_until = 0, timeout = 0;
 	static bool allowLeds = false;
@@ -102,12 +124,13 @@ void task_connect(){
 	
 		// DEBUG_PRINT((String)F("expexts answer: ") + (String)expectAnswer);
 		DEBUG_PRINT((String)F("state: ") + (String)state);
-		int answer = readBack(expectAnswer);
+
+		answer = readBack(expectAnswer);
 		if ( answer == 1 ) {
 			unlock_interrupts();
-			allowLeds = true;
+			allowLeds = false;
 			state = next_state;
-			DEBUG_PRINT((String)F("rn st: ") + (String)state);
+			DEBUG_PRINT((String)F("run connection state: ") + (String)state);
 			switch(state) {
 				case 0:
 				case 1:			//Send AT 3 times
@@ -181,7 +204,7 @@ void task_connect(){
 				break;
 				case 10:			//Last state in task. Success
 					GPRS_online = true;
-					next_state = 9	;
+					next_state = 8;
 					expectAnswer = None;
 					DEBUG_PRINT(F("Test cycle completed"));
 				break;
@@ -223,23 +246,121 @@ void task_connect(){
 	
 }
 
-void task_set_owner(){
-	static byte state = 0, next_state = 8, retry_state = 0, error_count = 5;
+void task_send_data(String data){
+	static byte state = 0, next_state = 0, retry_state = 0, error_count = 5;
 	static Gprs_responses expectAnswer = None;
 	static unsigned long wait_until = 0, timeout = 0;
-	static bool allowLeds = false;
+	// String URL = SERVER_URL + "/2/so?key=" + SERVER_KEY + ";owner=" + (String)3;
+	String URL;
 
-	if (wait_until < millis() && !allowLeds ){
+	if (wait_until < millis() ){
 	
 		// DEBUG_PRINT((String)F("expexts answer: ") + (String)expectAnswer);
 		DEBUG_PRINT((String)F("state: ") + (String)state);
 		int answer = readBack(expectAnswer);
 		if ( answer == 1 ) {
 			unlock_interrupts();
-			allowLeds = true;
 			state = next_state;
-			DEBUG_PRINT((String)F("running state: ") + (String)state);
+			DEBUG_PRINT((String)F("running SO state: ") + (String)state);
 			switch(state) {
+				case 0:		//Test connection
+					readBack(None);
+					GPRS.println(F("AT+SAPBR=2,1"));
+					DEBUG_PRINT(F("printing: SAPBR=2,1"));
+					lock_interrupts();
+					expectAnswer = IP;
+					timeout = millis() + 1000;
+					wait_until = millis() + 10;
+					next_state = 1;
+					retry_state = 0;
+				break;
+				case 1:
+					expectAnswer = None;
+					next_state = 2;
+				break;
+				case 2:		//HTTP Init
+					readBack(None);
+					GPRS.println(F("AT+HTTPINIT"));
+					DEBUG_PRINT(F("printing: HTTPINIT"));
+					lock_interrupts();
+					expectAnswer = Any;
+					timeout = millis() + 1000;
+					wait_until = millis() + 10;
+					next_state = 3;
+					retry_state = 1;
+				break;
+				case 3:
+					expectAnswer = None;
+					next_state = 4;
+				break;
+				case 4:		//HTTP params
+					readBack(None);
+					if (modem_task.task == set_owner){
+						URL = SERVER_URL + (String)"2" + (String)F("/so?key=") + SERVER_KEY + (String)F(";owner=") + data;
+					}
+					DEBUG_PRINT(URL);
+					GPRS.println((String)F("AT+HTTPPARA=\"URL\",\"") + (String)URL + "\"");
+					DEBUG_PRINT(F("printing: HTTPPARA"));
+					lock_interrupts();
+					expectAnswer = Any;
+					timeout = millis() + 1000;
+					wait_until = millis() + 10;
+					next_state = 5;
+					retry_state = 1;
+				break;
+				case 5:
+					expectAnswer = None;
+					next_state = 6;
+				break;
+				case 6:		//HTTP Action
+					readBack(None);
+					GPRS.println(F("AT+HTTPACTION=0"));
+					DEBUG_PRINT(F("printing: HTTPACTION=0"));
+					lock_interrupts();
+					expectAnswer = OK;
+					timeout = millis() + 1000;
+					wait_until = millis() + 10;
+					next_state = 7;
+					retry_state = 6;
+				break;
+				case 7:
+					expectAnswer = None;
+					// lock_interrupts();
+					timeout = millis() + 3000;
+					wait_until = millis() + 3000;
+					next_state = 8;
+				break;
+				case 8:
+					expectAnswer = None;
+					next_state = 9;
+				break;
+				case 9:		//HTTP Action
+					GPRS.println(F("AT+HTTPREAD"));
+					DEBUG_PRINT(F("printing: HTTPREAD"));
+					lock_interrupts();
+					expectAnswer = Accepted;
+					timeout = millis() + 3000;
+					wait_until = millis() + 10;
+					next_state = 98;
+					retry_state = 6;
+				break;
+				case 98:		//HTTP terminate
+					readBack(None);
+					GPRS.println(F("AT+HTTPTERM"));
+					DEBUG_PRINT(F("printing: HTTPTERM"));
+					lock_interrupts();
+					expectAnswer = Any;
+					timeout = millis() + 1000;
+					wait_until = millis() + 10;
+					next_state = 99;
+					retry_state = 0;
+				break;
+				case 99:
+					modem_task.complete_task();
+					expectAnswer = None;
+					next_state = 0;
+					error_count = 5;
+				break;
 			}
 		}
 		else if( timeout < millis() || answer == 2 ){
@@ -249,15 +370,15 @@ void task_set_owner(){
 			expectAnswer = None;
 			error_count--;
 		}
+
+		if (error_count <= 0){
+			error_count = 5;
+			wait_until = millis() + 1000;
+			expectAnswer = None;
+			next_state = 0;
+			GPRS_online = false;
+		}
 	}
-	else if(allowLeds){
-		DEBUG_PRINT(F("Allowing leds to update"));
-		allowLeds = false;
-
-	}
-
-
-
 	
 }
 
@@ -271,10 +392,11 @@ void task_get_tts(){
 String getCarrier(){
 	while (true){
 		GPRS.println(F("AT+COPS?"));
+		DEBUG_PRINT(F("Asked for carrier info"));
 		// GPRS.write("AT+COPS?\r");
 		// GPRS.write((const char*)F("AT+COPS?\r"));
 		
-		while(!GPRS.available()){}
+		// while(!GPRS.available()){}
 			delay(100);
 		while(GPRS.available()){
 			String message = GPRS.readString();
@@ -307,9 +429,6 @@ String getAPN(String carrier){
 
 //Common functions
 
-bool GPRS_check_online(){
-
-}
 
 int readBack(int expected){
 	DEBUG_PRINT((String)F("readback looking for: ") + (String)expected);
@@ -328,7 +447,7 @@ int readBack(int expected){
 			response[buffer_count++]=GPRS.read();     // writing data into array
 			if(buffer_count == 64)break;
 		}
-		// DEBUG_PRINT((String)F("count after response ") + (String)buffer_count);            // if no data transmission ends, write buffer to hardware serial port
+		DEBUG_PRINT((String)F("count after response ") + (String)buffer_count);            // if no data transmission ends, write buffer to hardware serial port
 		DEBUG_PRINT("Response: " + (String)response);            // if no data transmission ends, write buffer to hardware serial port
 		// DEBUG_PRINT(F("response of some kind"));            // if no data transmission ends, write buffer to hardware serial port
 		if (expected == Any){
@@ -337,6 +456,10 @@ int readBack(int expected){
 		if ( expected == OK && strstr(response, "OK") ){
 			responded = 1;
 			DEBUG_PRINT(F("this was an OK command"));
+		}
+		if ( expected == Accepted && strstr(response, "Ok") ){
+			responded = 1;
+			DEBUG_PRINT(F("this was an 202 command"));
 		}
 		if ( (expected == OK || expected == Message) && strstr(response, "ERROR") ){
 			responded = 2;
@@ -367,6 +490,6 @@ void lock_interrupts(){
 void unlock_interrupts(){
 	if (global_interrupts_locked){
 		global_interrupts_locked = false;
-		DEBUG_PRINT("Interrupts UNlocked. - " + (String)(millis() - lockTime));
+		DEBUG_PRINT("Interrupts UNlocked. -----------------> " + (String)(millis() - lockTime));
 	}
 }
