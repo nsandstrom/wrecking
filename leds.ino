@@ -83,7 +83,7 @@ void leds_update() {
   }
 
 
-  if (redrawLeds) {
+  if (redrawLeds && !global_interrupts_locked) {
     FastLED.show();
     redrawLeds = false;
   }

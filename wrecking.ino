@@ -26,6 +26,8 @@ byte global_boost = 97;
 
 int global_input_coordinates = 0;
 
+bool global_interrupts_locked = false;
+
 void setup(){
 	init_station();
 	init_display();
