@@ -6,7 +6,7 @@
 
 #define CHECK_CONNECTION_INTERVAL 600000
 
-// #define SERIAL_DEBUG
+#define SERIAL_DEBUG
 #ifdef SERIAL_DEBUG
  #define DEBUG_PRINT(x)  Serial.println (x)
 #else
@@ -30,8 +30,7 @@ enum Gprs_responses
 	None,
 	Message,
 	IP,
-	Boost,
-	Time
+	Number
 };
 
 void init_modem(){
@@ -88,10 +87,19 @@ void modem(){
 	//Chose active main task  
 	
 //Test code for interrupt flag
-	static unsigned long wait_untill = millis();
-	if (wait_untill < millis()){
+	static unsigned long check_connection_timeout = millis();
+	static unsigned long check_boost_timeout = millis() + 10000;
+	if (check_connection_timeout < millis()){
 		GPRS_online = false;
-		wait_untill = millis() + CHECK_CONNECTION_INTERVAL;
+		check_connection_timeout = millis() + CHECK_CONNECTION_INTERVAL;
+	}
+
+	if (check_boost_timeout < millis()){
+		if (!modem_task.busy()) {
+			DEBUG_PRINT(F("Time to check boost"));
+			modem_task.getBoost();
+			check_boost_timeout = millis() + 5000;
+		}
 	}
 
 	if (modem_task.has_new()){
@@ -298,6 +306,9 @@ void task_send_data(String data){
 					if (modem_task.task == set_owner){
 						URL = SERVER_URL + (String)"2" + (String)F("/so?key=") + SERVER_KEY + (String)F(";owner=") + data;
 					}
+					else if (modem_task.task = get_boost){
+						URL = SERVER_URL + (String)"2" + (String)F("/gb");
+					}
 					DEBUG_PRINT(URL);
 					GPRS.println((String)F("AT+HTTPPARA=\"URL\",\"") + (String)URL + "\"");
 					DEBUG_PRINT(F("printing: HTTPPARA"));
@@ -338,7 +349,12 @@ void task_send_data(String data){
 					GPRS.println(F("AT+HTTPREAD"));
 					DEBUG_PRINT(F("printing: HTTPREAD"));
 					lock_interrupts();
-					expectAnswer = Accepted;
+					if (modem_task.task == set_owner){
+						expectAnswer = Accepted;
+					}
+					else{
+						expectAnswer = Number;
+					}
 					timeout = millis() + 3000;
 					wait_until = millis() + 10;
 					next_state = 98;
@@ -459,9 +475,9 @@ int readBack(int expected){
 		}
 		if ( expected == Accepted && strstr(response, "Ok") ){
 			responded = 1;
-			DEBUG_PRINT(F("this was an 202 command"));
+			DEBUG_PRINT(F("this was an Accepted command"));
 		}
-		if ( (expected == OK || expected == Message) && strstr(response, "ERROR") ){
+		if ( (expected == OK || expected == Number ) && strstr(response, "ERROR") ){
 			responded = 2;
 			DEBUG_PRINT(F("Responded with ERROR"));
 		}
@@ -475,6 +491,18 @@ int readBack(int expected){
 				DEBUG_PRINT(F("IP error"));
 				responded = 2;
 			}
+		}
+		if ( expected == Number && strstr(response, "Ok:") ){
+			DEBUG_PRINT(F("Responded with number"));
+			char* split; 
+			strtok(response, ":");
+			split = strtok(NULL, ":");
+			split = strtok(NULL, ":");
+			modem_task.set_reply(split);
+			DEBUG_PRINT("split:" + (String)split);
+			// modem_task.set_reply((String)response.substring(3));
+			responded = 1;
+			DEBUG_PRINT("stored answer: " + (String)modem_task.get_reply());
 		}
 		buffer_count = 0;                       // set counter of while loop to zero
 	}

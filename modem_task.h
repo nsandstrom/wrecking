@@ -1,5 +1,5 @@
 #include <Arduino.h>
-enum Modem_Tasks {get_time, get_boost, set_owner, send_status};
+enum Modem_Tasks {get_time, get_boost, set_owner, get_owner, send_status};
 
 class Modem_task {
 private:
@@ -11,10 +11,15 @@ private:
 public:
 	bool has_new();
 	bool begin_task();
-	bool complete_task();
+	void complete_task();
+	void clear_task();
 	bool pending();
-	bool completed ();
+	bool completed();
+	bool busy();
+	void set_reply(String reply);
+	int get_reply();
 	void setOwner (int owner);
+	void getBoost ();
 	String data;
 	
 	Modem_Tasks task;
@@ -34,8 +39,12 @@ bool Modem_task::begin_task (){
 	status = Pending;
 }
 
-bool Modem_task::complete_task (){
+void Modem_task::complete_task (){
 	status = Done;
+}
+
+void Modem_task::clear_task (){
+	status = None;
 }
 
 
@@ -49,6 +58,13 @@ bool Modem_task::completed (){
 	return false;
 }
 
+bool Modem_task::busy (){
+	if (status == None){
+		return false;
+	}
+	return true;
+}
+
 bool Modem_task::pending (){
 	if (status == Pending){
 		return true;
@@ -56,9 +72,24 @@ bool Modem_task::pending (){
 	return false;
 }
 
+int Modem_task::get_reply() {
+	return reply.toInt();
+}
+
+void Modem_task::set_reply (String newReply) {
+	reply = newReply;
+	//change Status and Task
+} 
+
 void Modem_task::setOwner (int owner) {
 	task = set_owner;
 	data = (String)owner;
+	status = New;
+	//change Status and Task
+} 
+
+void Modem_task::getBoost () {
+	task = get_boost;
 	status = New;
 	//change Status and Task
 } 
