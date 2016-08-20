@@ -100,7 +100,8 @@ void station() {
         	global_next_state = active;
         }
       }
-      else{
+      else{        
+        // start owner change using task modem_task
         if (!modem_task.busy()){
          modem_task.setOwner(global_owner);
         }
@@ -130,10 +131,6 @@ void update_state(){
       break;
 
     case changeOwner:
-      // start owner change using task modem_task
-      if (!modem_task.busy()){
-    	 modem_task.setOwner(global_owner);
-      }
       break;
 	}
 
@@ -205,12 +202,6 @@ void debug_keypad_switch_state(){
 }
 
 void debug_update_boost(){
-	// byte direction;
-	// direction = random(3);
-	// if (direction == 0)
-	// 	global_boost --;
-	// else if (direction == 2)
-	// 	global_boost ++;
 
   if (modem_task.task == get_boost && modem_task.completed()){
     global_boost = modem_task.get_reply();

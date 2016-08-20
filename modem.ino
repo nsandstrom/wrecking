@@ -6,11 +6,11 @@
 
 #define CHECK_CONNECTION_INTERVAL 600000
 
-#define SERIAL_DEBUG
+// #define SERIAL_DEBUG
 #ifdef SERIAL_DEBUG
- #define DEBUG_PRINT(x)  Serial.println (x)
+	#define DEBUG_PRINT(x)  Serial.println (x)
 #else
- #define DEBUG_PRINT(x)
+	#define DEBUG_PRINT(x)
 #endif
 
 SoftwareSerial GPRS(MODEM_PIN_TX, MODEM_PIN_RX);
@@ -94,13 +94,13 @@ void modem(){
 		check_connection_timeout = millis() + CHECK_CONNECTION_INTERVAL;
 	}
 
-	if (check_boost_timeout < millis()){
-		if (!modem_task.busy()) {
-			DEBUG_PRINT(F("Time to check boost"));
-			modem_task.getBoost();
-			check_boost_timeout = millis() + 5000;
-		}
-	}
+	// if (check_boost_timeout < millis()){
+	// 	if (!modem_task.busy()) {
+	// 		DEBUG_PRINT(F("Time to check boost"));
+	// 		modem_task.getBoost();
+	// 		check_boost_timeout = millis() + 5000;
+	// 	}
+	// }
 
 	if (modem_task.has_new()){
 		DEBUG_PRINT("there is new task");
