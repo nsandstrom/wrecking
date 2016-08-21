@@ -1,6 +1,8 @@
 //This will config the sim 9000
 #include <SoftwareSerial.h>
 
+#define STATION_ID "2"
+
 #define GRPS_BAUD 38400
 #define SERIAL_BAUD 115200
 
@@ -88,7 +90,7 @@ void modem(){
 	
 //Test code for interrupt flag
 	static unsigned long check_connection_timeout = millis();
-	static unsigned long check_boost_timeout = millis() + 10000;
+	static unsigned long check_boost_timeout = millis() + 5000;
 	if (check_connection_timeout < millis()){
 		GPRS_online = false;
 		check_connection_timeout = millis() + CHECK_CONNECTION_INTERVAL;
@@ -304,10 +306,16 @@ void task_send_data(String data){
 				case 4:		//HTTP params
 					readBack(None);
 					if (modem_task.task == set_owner){
-						URL = SERVER_URL + (String)"2" + (String)F("/so?key=") + SERVER_KEY + (String)F(";owner=") + data;
+						URL = SERVER_URL + (String)STATION_ID + (String)F("/so?key=") + SERVER_KEY + (String)F(";owner=") + data;
 					}
-					else if (modem_task.task = get_boost){
-						URL = SERVER_URL + (String)"2" + (String)F("/gb");
+					else if (modem_task.task == get_boost){
+						URL = SERVER_URL + (String)STATION_ID + (String)F("/gb");
+					}
+					else if (modem_task.task == get_owner){
+						URL = SERVER_URL + (String)STATION_ID + (String)F("/go");
+					}
+					else if (modem_task.task == get_time){
+						URL = SERVER_URL + (String)F("tts");
 					}
 					DEBUG_PRINT(URL);
 					GPRS.println((String)F("AT+HTTPPARA=\"URL\",\"") + (String)URL + "\"");
