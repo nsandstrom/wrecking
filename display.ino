@@ -44,11 +44,18 @@ const byte COLUMN_N = 20;             // Number of display columns
 
 //const byte RES = 3;                 // Arduino's pin assigned to the Reset line (optional, can be always high)
 
-const String DISPLAY_TEAM_NAME[5] = {"       ",
-                                       "Chaos  ",
-                                       "CyberCo",
-                                       "Cluster",
-                                       "HKM    "
+const String DISPLAY_SHORT_TEAM_NAME[5] = {"       ",
+                                           "Chaos  ",
+                                           "CyberCo",
+                                           "Cluster",
+                                           "HKM    "
+                                          };
+
+const String DISPLAY_TEAM_NAME[5] =   {"            ",
+                                       "Chaosists   ",
+                                       "CyberCom    ",
+                                       "The Cluster ",
+                                       "Hjortkloe MF"
                                       };
 
 byte new_line[4] = {0x80, 0xA0, 0xC0, 0xE0};               // DDRAM address for each line of the display
@@ -111,6 +118,20 @@ void init_display(void)                      // INITIAL SETUP
 
   if (ROW_N == 2)
     new_line[1] = 0xC0;             // DDRAM address for each line of the display (only for 2-line mode)
+
+
+  delay(250);           // Waits 250 ms for stabilization purpose after display on
+  display_print(F("Establishing"), 0, 0);
+  display_print(F("connection"), 1, 0);
+  display_print(F("Please wait ..."), 3, 0);
+}
+
+void display_dwlding_data(){
+  command(0x01);        // Clear display
+  delay(2);             // After a clear display, a minimum pause of 1-2 ms is required
+
+  display_print(F("Downloading data"), 0, 0);
+  display_print(F("Please wait ..."), 3, 0);  
 }
 
 void display_update () {
@@ -118,16 +139,17 @@ void display_update () {
   switch (global_state)
   {
     case idle:
-      display_print_value(global_next_round_countdown, 3, 2, 0);  
+      display_print_HHMMSS(global_time, 2, 0);  
     
       break;
 
     case active:
-      display_print_value(global_boost, 3, 0, 16); 
+      display_print_value(global_boost, 3, 0, 16, ' ');
+      display_print_HHMMSS(global_time*-1, 2, 11);  
       break;
 
     case capturing:
-      display_print_value(global_capture_countdown, 3, 2, 17);
+      display_print_value(global_capture_countdown, 3, 2, 17, ' ');
       
       break;
 
@@ -156,6 +178,8 @@ void display_enter_state(){
       display_print(F("Output:    %"), 0, 8);
       display_print(F("Target:"), 1, 0);
       display_print(DISPLAY_TEAM_NAME[global_owner], 1,8);
+      display_print(F("Time left:"), 2, 0);
+      display_print(F("Press 'D' to reconf"), 3, 0);
       break;
 
     case capturing:
@@ -168,14 +192,14 @@ void display_enter_state(){
       display_print(F("zone:"), 1, 0);      
       
       display_print("1.", 2, 0);
-      display_print(DISPLAY_TEAM_NAME[1], 2,2);     
+      display_print(DISPLAY_SHORT_TEAM_NAME[1], 2,2);     
       display_print("2.", 3, 0);
-      display_print(DISPLAY_TEAM_NAME[2], 3,2);
+      display_print(DISPLAY_SHORT_TEAM_NAME[2], 3,2);
 
       display_print("3.", 2, 10);
-      display_print(DISPLAY_TEAM_NAME[3], 2,12);
+      display_print(DISPLAY_SHORT_TEAM_NAME[3], 2,12);
       display_print("4.", 3, 10);
-      display_print(DISPLAY_TEAM_NAME[4], 3,12);
+      display_print(DISPLAY_SHORT_TEAM_NAME[4], 3,12);
 
 
       break;
@@ -226,7 +250,7 @@ void send_byte(byte tx_b)
 // _______________________________________________________________________________________
 
 //displays a right-adjusted value
-void display_print_value(int value, byte number_of_digits, byte row, byte start){
+void display_print_value(int value, byte number_of_digits, byte row, byte start, char fillCharacter){
   String value_string;
   byte offset;
 
@@ -237,10 +261,27 @@ void display_print_value(int value, byte number_of_digits, byte row, byte start)
   for (byte c = 0; c < number_of_digits; c++)  // One character at a time,
   {
     if (c < offset)
-      data(' ');
+      data(fillCharacter);
     else
       data(value_string[c-offset]); 
   }
+}
+
+//displays a integer as HHMMSS
+void display_print_HHMMSS(int value, byte row, byte start){
+
+  int HH = value/3600;
+  int MM = (value - (HH*3600))/60;
+  int SS = value - (HH*3600) - (MM*60);
+
+  //display hours
+  display_print_value(HH, 2, row, start, '0');
+  display_print(F(":"), row, start+2);
+  //display minutes
+  display_print_value(MM, 2, row, start+3, '0');
+  display_print(":", row, start+5);
+  //display Seconds
+  display_print_value(SS, 2, row, start+6, '0');
 }
 
 void display_print(String text, byte row, byte start){

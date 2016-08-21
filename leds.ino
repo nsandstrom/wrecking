@@ -1,11 +1,11 @@
-#define NUM_LEDS 150
+#define NUM_LEDS 144
 #define MAX_BRIGHT 255
-#define FLASH_BRIGHT 127
+#define FLASH_BRIGHT 180
 #define LOW_BRIGHT 32
 #define LEDS_MAX_FADE_BRIGHT 32
 #define LEDS_MIN_FADE_BRIGHT 4
 
-#define SECTIONS 4
+#define SECTIONS 8
 #define SECTION_LENGTH NUM_LEDS/SECTIONS
 
 #define LED_UPDATE_INTERVAL 50
@@ -47,7 +47,8 @@ void init_leds() {
 }
 
 void leds_update() {
-  static unsigned long led_animate_time;
+  static unsigned long led_animate_time = 0;
+  static char flash_divider = 0;
   switch (global_state)
   {
     case idle:
@@ -70,7 +71,18 @@ void leds_update() {
       if ((global_loop_start_time - led_animate_time) > LED_UPDATE_INTERVAL)
       {
         leds_animate_running();
-        FlashLedRow();
+
+        // dont flash on every cycle
+        if (flash_divider == 0)
+        {
+          FlashLedRow();
+          flash_divider = 1;
+        }
+        else
+        {
+          flash_divider--;
+        }
+        
         led_animate_time = global_loop_start_time;
       }
       break;
@@ -136,7 +148,7 @@ void leds_animate_running() {
     {
       //First calculate dot position for the different section
       //if odd section number, reverse flow
-      if (section == 2 || section == 3) {
+      if (section == 4 || section == 5|| section == 6|| section == 7) {
         sectionOffset = ((section + 1) * SECTION_LENGTH) - 1;
 
         //preglow
@@ -214,7 +226,7 @@ void FlashLedRow() {
   for (byte section = 0; section < SECTIONS; section++) {
     //if led_sections_broken, indicates a flashing situation, dim and set to 0
     if (led_sections_broken[section]>100) {
-      FillSection(colorNeutral, 64, section);
+      FillSection(colorNeutral, 127, section);
       led_sections_broken[section] = 0;
     } 
     //if led_sections_broken indicates an outage, decrement outage counter

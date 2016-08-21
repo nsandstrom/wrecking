@@ -7,7 +7,7 @@
 #include <Keypad.h>
 
 #define ONE_SECOND 1000
-#define CAPTURE_TIME 6
+#define CAPTURE_TIME 60
 
 #define DEBUG
 
@@ -20,7 +20,7 @@ States global_next_state = idle;
 unsigned long global_loop_start_time;
 unsigned long global_one_second_timer;
 
-int global_next_round_countdown = 0;
+long global_time = 0;
 int global_capture_countdown = 0;
 byte global_boost = 97;
 
@@ -35,10 +35,31 @@ void setup(){
 	init_keypad();
 	init_modem();
 
+  get_initial_data();
+
 	//debug stuff, remove later
 	global_next_state = active;
 	global_owner = hjortkloe;
-	global_next_round_countdown = 300;
+	global_time = 10;
+}
+
+void get_initial_data(){
+  display_dwlding_data();
+
+  if (!modem_task.busy()) {
+    modem_task.getBoost();
+  }
+
+  //wait untill task is completed
+  while (!modem_task.completed())
+  {
+    modem();
+  }
+
+  if (modem_task.task == get_boost && modem_task.completed()){
+    global_boost = modem_task.get_reply();
+    modem_task.clear_task();
+  }
 }
 
 
@@ -70,12 +91,26 @@ void station() {
       #ifdef DEBUG 
     	debug_keypad_switch_state(); 
     	#endif
+
+      //go to active if global time < 0
+      if (global_time < 0)
+        {
+          global_next_state = active;
+        }
+
       break;
 
     case active:
       #ifdef DEBUG 
     	debug_keypad_switch_state(); 
     	#endif
+
+      //go to idle if global time > 0
+      if (global_time > 0)
+        {
+          global_next_state = idle;
+        }
+
       break;
 
     case capturing:
@@ -142,7 +177,7 @@ void update_timers(){
   if ((global_loop_start_time - global_one_second_timer) > ONE_SECOND)
   {
   	debug_update_boost();
-    global_next_round_countdown --;
+    global_time --;
     global_capture_countdown --;
     global_one_second_timer = global_loop_start_time;
   }
