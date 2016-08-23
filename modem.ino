@@ -35,7 +35,7 @@ enum Gprs_responses
 	Number
 };
 
-void init_modem(){
+int init_modem(){
 	pinMode(MODEM_PIN_RST, OUTPUT);
 	digitalWrite(MODEM_PIN_RST, HIGH);
 	digitalWrite(MODEM_PIN_RST, LOW);
@@ -55,7 +55,7 @@ void init_modem(){
 		lock_interrupts();	
 		readBack(None);
 		for (int i=1; i <= 10; i++){
-			GPRS.write("AT\r\n");
+			GPRS.println("AT");
 			readBack(None);
 			delay(1);
 		}
@@ -67,6 +67,8 @@ void init_modem(){
 			GPRS.println("AT");
 		  	while (readBack(Any) != 1);
 		}
+
+		delay(2000);
 		
 
 		String Carrier = getCarrier();
@@ -76,12 +78,19 @@ void init_modem(){
 		delay(2000);
 		readBack(None);
 		readBack(None);
+
+		int sq = getSQ();
 		readBack(None);
 
 		unlock_interrupts();
 
 		DEBUG_PRINT(F("Modem init completed"));
 		init_completed = true;
+
+		if (init_completed){
+			DEBUG_PRINT((String)F("Return int SQ: ") + (String)sq );
+			return sq;
+		}
 	}
 }
 
@@ -413,6 +422,29 @@ void task_get_tts(){
 
 
 //Init functions
+int getSQ(){
+	while(true){
+		GPRS.println(F("AT+CSQ"));
+		DEBUG_PRINT(F("Asked for SQ"));
+		delay(100);
+		while(GPRS.available()){
+			String message = GPRS.readString();
+				DEBUG_PRINT((String)F("full reply: ") + message);
+				DEBUG_PRINT(message.substring(9,14));
+			String sq;
+			if (message.substring(9,14) == F("+CSQ:")) {
+				sq = message.substring(message.indexOf(":")+2, message.lastIndexOf(","));				
+				DEBUG_PRINT((String)F("SQ: ") + sq);
+				return sq.toInt();
+			}
+			else{				
+				DEBUG_PRINT(F("identifying sq"));
+			}
+		}
+		delay(500);
+	}
+}
+
 String getCarrier(){
 	while (true){
 		GPRS.println(F("AT+COPS?"));
@@ -440,7 +472,7 @@ String getCarrier(){
 }
 
 String getAPN(String carrier){
-	if (carrier == F("Tele2")) {
+	if (carrier == F("Tele2") || F("24024") ) {
 		return F("4G.tele2.se");
 	}
 	else if (carrier == F("Telia") || carrier == F("TELIA MOBILE")) {
