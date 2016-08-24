@@ -126,11 +126,14 @@ void init_display(void)                      // INITIAL SETUP
   display_print(F("Please wait ..."), 3, 0);
 }
 
-void display_dwlding_data(){
+void display_dwlding_data(int signalQuality){
   command(0x01);        // Clear display
   delay(2);             // After a clear display, a minimum pause of 1-2 ms is required
 
-  display_print(F("Downloading data"), 0, 0);
+
+  display_print(F("Downloading"), 0, 0);
+  display_print(F("Signal strength:"), 2, 0);
+  display_print_value(signalQuality, 2, 2, 17, ' ');
   display_print(F("Please wait ..."), 3, 0);  
 }
 
@@ -145,11 +148,11 @@ void display_update () {
 
     case active:
       display_print_value(global_boost, 3, 0, 16, ' ');
-      display_print_HHMMSS(global_time*-1, 2, 11);  
+      display_print_HHMMSS(global_time*-1, 1, 11);  
       break;
 
     case capturing:
-      display_print_value(global_capture_countdown, 3, 2, 17, ' ');
+      display_print_value(global_capture_countdown, 3, 1, 17, ' ');
       
       break;
 
@@ -176,15 +179,16 @@ void display_enter_state(){
 
     case active:
       display_print(F("Output:    %"), 0, 8);
-      display_print(F("Target:"), 1, 0);
-      display_print(DISPLAY_TEAM_NAME[global_owner], 1,8);
-      display_print(F("Time left:"), 2, 0);
-      display_print(F("Press 'D' to reconf"), 3, 0);
+      display_print(F("Time left:"), 1, 0);
+      display_print(F("Target:"), 2, 0);
+      display_print(DISPLAY_TEAM_NAME[global_owner], 2,8);
+      display_print(F("Press 'C' to change"), 3, 0);
       break;
 
     case capturing:
-      display_print(F("Reinitializing"), 1, 3);      
-      display_print(F("Time left:"), 2, 0);      
+      display_print(F("Reinitializing"), 0, 3);      
+      display_print(F("Time left:"), 1, 0);  
+      display_print(F("Press 'A' to abort"), 3, 0);  
       break;
 
     case waitForCoordinates:

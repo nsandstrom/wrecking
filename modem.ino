@@ -8,7 +8,7 @@
 
 #define CHECK_CONNECTION_INTERVAL 600000
 
-// #define SERIAL_DEBUG
+//#define SERIAL_DEBUG
 #ifdef SERIAL_DEBUG
 	#define DEBUG_PRINT(x)  Serial.println (x)
 #else
@@ -472,7 +472,7 @@ String getCarrier(){
 }
 
 String getAPN(String carrier){
-	if (carrier == F("Tele2") || F("24024") ) {
+	if (carrier == F("Tele2") || carrier == F("24024")) {
 		return F("4G.tele2.se");
 	}
 	else if (carrier == F("Telia") || carrier == F("TELIA MOBILE")) {
