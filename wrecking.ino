@@ -65,13 +65,15 @@ void get_initial_data(int signalQuality){
           display_print(F("Boost level"), 1, 0);
           modem_task.getBoost();
           break;
+          
         case 1:
-          display_print(F("Timing information"), 1, 0);
-          modem_task.getTime();
-          break;
-        case 2:
           display_print(F("Ownership status  "), 1, 0);
           modem_task.getOwner();
+          break;
+
+        case 2:
+          display_print(F("Timing information"), 1, 0);
+          modem_task.getTime();
           break;
       }
       
