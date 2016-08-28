@@ -44,11 +44,11 @@ const byte COLUMN_N = 20;             // Number of display columns
 
 //const byte RES = 3;                 // Arduino's pin assigned to the Reset line (optional, can be always high)
 
-const String DISPLAY_SHORT_TEAM_NAME[5] = {"       ",
-                                           "Chaos  ",
-                                           "CyberCo",
-                                           "Cluster",
-                                           "HKM    "
+const String DISPLAY_SHORT_TEAM_NAME[5] = {"     ",
+                                           "[666]",
+                                           "[CYB]",
+                                           "[CLU]",
+                                           "[HKM]"
                                           };
 
 const String DISPLAY_TEAM_NAME[5] =   {"            ",
@@ -137,13 +137,24 @@ void display_dwlding_data(int signalQuality){
   display_print(F("Please wait ..."), 3, 0);  
 }
 
+void display_timeing_update(){
+  command(0x01);        // Clear display
+  delay(2);             // After a clear display, a minimum pause of 1-2 ms is required
+
+  display_print(F("Synchronizing"), 0, 0);
+  display_print(F("timing information"), 1, 0);
+}
+
 void display_update () {
-  
   switch (global_state)
   {
     case idle:
-      display_print_HHMMSS(global_time, 2, 0);  
-    
+      if (global_time != 999999){
+        display_print_HHMMSS(global_time, 2, 0);  
+ 
+        display_print_value(global_time, 6, 3,0, ' ');
+      }
+  
       break;
 
     case active:
@@ -173,8 +184,10 @@ void display_enter_state(){
   switch(global_state)
   {
     case idle:
-      display_print(F("NO CONNECTION!"), 0, 3);
-      display_print(F("Time to next window:"), 1,0);
+      display_print(F("NO COMMUNICATION"), 0, 2);
+      display_print(F("Next COM-WIN:"), 1,0);
+      if (global_time == 999999)
+        display_print(F("UNKNOWN"), 2,0);
       break;
 
     case active:
@@ -197,11 +210,11 @@ void display_enter_state(){
       
       display_print("1.", 2, 0);
       display_print(DISPLAY_SHORT_TEAM_NAME[1], 2,2);     
-      display_print("2.", 3, 0);
-      display_print(DISPLAY_SHORT_TEAM_NAME[2], 3,2);
+      display_print("2.", 2, 10);
+      display_print(DISPLAY_SHORT_TEAM_NAME[2], 2,12);
 
-      display_print("3.", 2, 10);
-      display_print(DISPLAY_SHORT_TEAM_NAME[3], 2,12);
+      display_print("3.", 3, 0);
+      display_print(DISPLAY_SHORT_TEAM_NAME[3], 3,2);
       display_print("4.", 3, 10);
       display_print(DISPLAY_SHORT_TEAM_NAME[4], 3,12);
 
@@ -254,7 +267,7 @@ void send_byte(byte tx_b)
 // _______________________________________________________________________________________
 
 //displays a right-adjusted value
-void display_print_value(int value, byte number_of_digits, byte row, byte start, char fillCharacter){
+void display_print_value(long value, byte number_of_digits, byte row, byte start, char fillCharacter){
   String value_string;
   byte offset;
 
@@ -267,12 +280,12 @@ void display_print_value(int value, byte number_of_digits, byte row, byte start,
     if (c < offset)
       data(fillCharacter);
     else
-      data(value_string[c-offset]); 
+      data(value_string[c-offset]);
   }
 }
 
 //displays a integer as HHMMSS
-void display_print_HHMMSS(int value, byte row, byte start){
+void display_print_HHMMSS(long value, byte row, byte start){
 
   int HH = value/3600;
   int MM = (value - (HH*3600))/60;

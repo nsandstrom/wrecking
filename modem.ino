@@ -1,8 +1,6 @@
 //This will config the sim 9000
 #include <SoftwareSerial.h>
 
-#define STATION_ID "2"
-
 #define GRPS_BAUD 38400
 #define SERIAL_BAUD 115200
 
@@ -324,7 +322,7 @@ void task_send_data(String data){
 						URL = SERVER_URL + (String)STATION_ID + (String)F("/go");
 					}
 					else if (modem_task.task == get_time){
-						URL = SERVER_URL + (String)F("tts");
+						URL = SERVER_URL + (String)STATION_ID + (String)F("/tts");
 					}
 					DEBUG_PRINT(URL);
 					GPRS.println((String)F("AT+HTTPPARA=\"URL\",\"") + (String)URL + "\"");

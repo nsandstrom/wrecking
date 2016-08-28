@@ -17,7 +17,7 @@ public:
 	bool completed();
 	bool busy();
 	void set_reply(String reply);
-	int get_reply();
+	long get_reply();
 	void setOwner (int owner);
 	void getBoost ();
 	void getOwner ();
@@ -75,8 +75,8 @@ bool Modem_task::pending (){
 	return false;
 }
 
-int Modem_task::get_reply() {
-	return reply.toInt();
+long Modem_task::get_reply() {
+	return atol(reply.c_str());
 }
 
 void Modem_task::set_reply (String newReply) {

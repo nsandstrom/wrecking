@@ -6,8 +6,10 @@
 #include <FastLED.h>
 #include <Keypad.h>
 
+#define STATION_ID "1"
+
 #define ONE_SECOND 1000
-#define UPDATE_TIME_INTERVAL 10
+#define UPDATE_TIME_INTERVAL 60
 #define UPDATE_BOOST_INTERVAL 10
 
 #define CAPTURE_TIME 60
@@ -122,21 +124,16 @@ void station() {
   {
     case idle:
       //go to active if global time < 0
-      if (global_time < 0)
-        {
+      if (global_time <= 0)
           global_next_state = active;
-        }
 
-        request_timning_information();
-
+      request_timning_information();
       break;
 
     case active:
       //go to idle if global time > 0
-      if (global_time > 0)
-      {
+      if (global_time >= 0)
         global_next_state = idle;
-      }
 
       request_timning_information();
       request_boost_information();
@@ -146,10 +143,12 @@ void station() {
       break;
 
     case capturing:
-      if (global_capture_countdown <= 0)
-      {
+      //go to idle if global time > 0
+      if (global_time >= 0)
+        global_next_state = idle;
+
+      else if (global_capture_countdown <= 0)
         global_next_state = waitForCoordinates;
-      }
 
       //check if someone wants to abort the capture
       keypad_abort_capture();
@@ -208,7 +207,15 @@ void update_state(){
 void update_timers(){
   if ((global_loop_start_time - global_one_second_timer) > ONE_SECOND)
   {
-    global_time --;
+    if (global_time == 0)
+      update_time_blocking();
+    else if (global_time == 999999)
+      global_time = 999999;
+    else if (global_time > 0)
+      global_time --;
+    else
+      global_time ++;
+
     global_capture_countdown --;
     global_update_boost_timer++;
     global_update_time_timer++;
@@ -287,7 +294,7 @@ void update_with_latest_modem_data(){
   switch (modem_task.task)
   {
     case get_boost:
-      global_boost = modem_task.get_reply();
+      global_boost = (int)modem_task.get_reply();
       //clear the task NOTE, THIS MUST BE ON EVERY CASE
       modem_task.clear_task();
       break;
@@ -308,6 +315,34 @@ void update_with_latest_modem_data(){
       //DONT CLEAR THE TASK HERE, LET SOMETHING ELSE DO THAT
       break;
   }
+}
+
+//Updates the right variable with the latest modem data
+//Check if task completed before running this function
+void update_time_blocking(){
+  bool update_completed = false;
+  display_timeing_update();
+  
+  //run untill update completed
+  while (!update_completed){
+    //start a new task if modem not busy
+    if (!modem_task.busy()) {
+      display_print(F("Timing information"), 1, 0);
+      modem_task.getTime();
+    }
+    //check task results if modem completed
+    else if (modem_task.completed()){
+      update_with_latest_modem_data();
+      update_completed = true;
+    }
+    else {
+      //wait untill task is completed
+      while (!modem_task.completed())
+      {
+        modem();
+      }
+    }
+  } 
 }
 
 
