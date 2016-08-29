@@ -36,7 +36,6 @@ bool global_interrupts_locked = false;
 void setup(){
   int signalQuality = 0;
 
-	init_station();
 	init_display();
 	init_leds();
 	init_keypad();
@@ -117,16 +116,13 @@ void loop(){
   }
 }
 
-void init_station(){
-	//Empty until needed
-}
 
 void station() {
   switch (global_state)
   {
     case idle:
       //go to active if global time < 0
-      if (global_time <= 0)
+      if (global_time < 0)
           global_next_state = active;
 
       request_timning_information();
@@ -134,7 +130,7 @@ void station() {
 
     case active:
       //go to idle if global time > 0
-      if (global_time >= 0)
+      if (global_time > 0)
         global_next_state = idle;
 
       request_timning_information();
@@ -146,7 +142,7 @@ void station() {
 
     case capturing:
       //go to idle if global time > 0
-      if (global_time >= 0)
+      if (global_time > 0)
         global_next_state = idle;
 
       else if (global_capture_countdown <= 0)
@@ -215,7 +211,7 @@ void update_timers(){
       global_time = 999999;
     else if (global_time > 0)
       global_time --;
-    else
+    else if (global_time < 0)
       global_time ++;
 
     global_capture_countdown --;

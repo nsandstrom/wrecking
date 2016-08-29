@@ -113,7 +113,7 @@ void init_display(void)                      // INITIAL SETUP
   command(0x01);        // Clear display
   delay(2);             // After a clear display, a minimum pause of 1-2 ms is required
   command(0x80);        // Set DDRAM address 0x00 in address counter (cursor home) (default value)
-  command(0x0C);        // Display ON/OFF control: display ON, cursor off, blink off
+  command(0x0C);        // Display ON/OFF qcontrol: display ON, cursor off, blink off
   delay(250);           // Waits 250 ms for stabilization purpose after display on
 
   if (ROW_N == 2)
@@ -121,8 +121,9 @@ void init_display(void)                      // INITIAL SETUP
 
 
   delay(250);           // Waits 250 ms for stabilization purpose after display on
-  display_print(F("Establishing"), 0, 0);
-  display_print(F("connection"), 1, 0);
+  display_print(F("--------------------"), 0, 0);
+  display_print(F("Starting station"), 1, 0);
+  display_print(STATION_ID, 1, 17);
   display_print(F("Please wait ..."), 3, 0);
 }
 
@@ -152,7 +153,7 @@ void display_update () {
       if (global_time != 999999){
         display_print_HHMMSS(global_time, 2, 0);  
  
-        display_print_value(global_time, 6, 3,0, ' ');
+        //display_print_value(global_time, 6, 3,0, ' ');
       }
   
       break;
@@ -163,7 +164,7 @@ void display_update () {
       break;
 
     case capturing:
-      display_print_value(global_capture_countdown, 3, 1, 17, ' ');
+      display_progress(2, (20-global_capture_countdown/3));
       
       break;
 
@@ -199,8 +200,8 @@ void display_enter_state(){
       break;
 
     case capturing:
-      display_print(F("Reinitializing"), 0, 3);      
-      display_print(F("Time left:"), 1, 0);  
+      display_print(F("Preparing coordinate"), 0, 0);      
+      display_print(F("change, please wait."), 1, 0);  
       display_print(F("Press 'A' to abort"), 3, 0);  
       break;
 
@@ -287,7 +288,7 @@ void display_print_value(long value, byte number_of_digits, byte row, byte start
 //displays a integer as HHMMSS
 void display_print_HHMMSS(long value, byte row, byte start){
 
-  int HH = value/3600;
+  long HH = value/3600;
   int MM = (value - (HH*3600))/60;
   int SS = value - (HH*3600) - (MM*60);
 
@@ -308,4 +309,16 @@ void display_print(String text, byte row, byte start){
   {
     data(text[c]); 
   }
+}
+
+void display_progress(byte row, byte progress){
+  command(new_line[row]);           //  moves the cursor to the first column of that line
+  //avoid display overflow
+  if (progress > 20)
+    progress = 20;
+  for (byte c = 0; c < progress; c++)  // One character at a time,
+  {
+    data(0xFC); 
+  }
+
 }
