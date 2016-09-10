@@ -23,11 +23,11 @@ static byte led_sections_broken[SECTIONS];
 CRGB leds[NUM_LEDS];
 
 //define wrecker colors
-CHSV colorNeutral(0, 0, MAX_BRIGHT);
+CHSV colorNeutral(0, 0, 100);
 CHSV colorKaos(0, 255, MAX_BRIGHT);
 CHSV colorCyberCom(160, 255, MAX_BRIGHT);
 CHSV colorKlustret(200, 255, MAX_BRIGHT);
-CHSV colorHjortkloe(32, 255, MAX_BRIGHT);
+CHSV colorHjortkloe(25, 255, MAX_BRIGHT);
 CHSV colorBlack(0, 0, 0);
 
 CHSV led_colors[6] = {colorNeutral,

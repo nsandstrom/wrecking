@@ -6,7 +6,7 @@
 #include <FastLED.h>
 #include <Keypad.h>
 
-#define STATION_ID "1"
+#define STATION_ID "4"
 
 #define ONE_SECOND 1000
 #define UPDATE_TIME_INTERVAL 60

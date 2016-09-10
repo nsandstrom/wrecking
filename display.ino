@@ -151,7 +151,7 @@ void display_update () {
   {
     case idle:
       if (global_time != 999999){
-        display_print_HHMMSS(global_time, 2, 0);  
+        display_print_HHMMSS(global_time, 3, 0);  
  
         //display_print_value(global_time, 6, 3,0, ' ');
       }
@@ -185,13 +185,17 @@ void display_enter_state(){
   switch(global_state)
   {
     case idle:
-      display_print(F("NO COMMUNICATION"), 0, 2);
-      display_print(F("Next COM-WIN:"), 1,0);
+      display_print(F("ID:"), 0,0);
+      display_print(STATION_ID, 0, 3);
+      display_print(F("NO COMMUNICATION"), 1, 2);
+      display_print(F("Next COM-WIN:"), 2,0);
       if (global_time == 999999)
-        display_print(F("UNKNOWN"), 2,0);
+        display_print(F("UNKNOWN"), 3,0);
       break;
 
     case active:
+      display_print(F("ID:"), 0,0);
+      display_print(STATION_ID, 0, 3);
       display_print(F("Output:    %"), 0, 8);
       display_print(F("Time left:"), 1, 0);
       display_print(F("Target:"), 2, 0);
