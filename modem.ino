@@ -324,6 +324,9 @@ void task_send_data(String data){
 					else if (modem_task.task == get_time){
 						URL = SERVER_URL + (String)STATION_ID + (String)F("/tts");
 					}
+					else if (modem_task.task == set_under_capture){
+						URL = SERVER_URL + (String)STATION_ID + (String)F("/uc");
+					}
 					DEBUG_PRINT(URL);
 					GPRS.println((String)F("AT+HTTPPARA=\"URL\",\"") + (String)URL + "\"");
 					DEBUG_PRINT(F("printing: HTTPPARA"));
@@ -364,7 +367,7 @@ void task_send_data(String data){
 					GPRS.println(F("AT+HTTPREAD"));
 					DEBUG_PRINT(F("printing: HTTPREAD"));
 					lock_interrupts();
-					if (modem_task.task == set_owner){
+					if (modem_task.task == set_owner || modem_task.task == set_under_capture){
 						expectAnswer = Accepted;
 					}
 					else{

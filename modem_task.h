@@ -1,5 +1,5 @@
 #include <Arduino.h>
-enum Modem_Tasks {none, get_time, get_boost, set_owner, get_owner, send_status};
+enum Modem_Tasks {none, get_time, get_boost, set_owner, get_owner, send_status, set_under_capture};
 
 class Modem_task {
 private:
@@ -22,6 +22,7 @@ public:
 	void getBoost ();
 	void getOwner ();
 	void getTime ();
+	void setUnderCapture ();
 	String data;
 	
 	Modem_Tasks task = none;
@@ -105,6 +106,12 @@ void Modem_task::getOwner () {
 
 void Modem_task::getTime () {
 	task = get_time;
+	status = New;
+	//change Status and Task
+}
+
+void Modem_task::setUnderCapture () {
+	task = set_under_capture;
 	status = New;
 	//change Status and Task
 }
