@@ -166,7 +166,7 @@ void display_update () {
       break;
 
     case capturing:
-      display_progress(2, (20-global_capture_countdown/3));
+      display_progress(2, (20-global_capture_countdown/(CAPTURE_TIME/20)));
       
       break;
 
@@ -200,20 +200,19 @@ void display_enter_state(){
       display_print(STATION_ID, 0, 3);
       display_print(F("Output:    %"), 0, 8);
       display_print(F("Time left:"), 1, 0);
-      display_print(F("Target:"), 2, 0);
+      display_print(F("Owner:"), 2, 0);
       display_print(DISPLAY_TEAM_NAME[global_owner], 2,8);
       display_print(F("Press 'C' to change"), 3, 0);
       break;
 
     case capturing:
-      display_print(F("Preparing coordinate"), 0, 0);      
-      display_print(F("change, please wait."), 1, 0);  
+      display_print(F("Reinitializing"), 0, 0);      
+      display_print(F("Please wait ..."), 1, 0);  
       display_print(F("Press 'A' to abort"), 3, 0);  
       break;
 
     case selectTeam:
-      display_print(F("Select new landing"), 0, 0);      
-      display_print(F("zone:"), 1, 0);      
+      display_print(F("Select new owner:"), 0, 0);
       
       display_print("1.", 2, 0);
       display_print(DISPLAY_SHORT_TEAM_NAME[1], 2,2);     
@@ -229,8 +228,8 @@ void display_enter_state(){
       break;
 
     case changeOwner:
-      display_print(F("Uploading new "), 0, 0);      
-      display_print(F("coordinates"), 1, 0);      
+      display_print(F("Uploading new"), 0, 0);      
+      display_print(F("ownership data"), 1, 0);      
       display_print(F("Please wait ..."), 2, 2);      
       break;
 
