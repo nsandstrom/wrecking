@@ -171,7 +171,7 @@ void display_update () {
       break;
 
     case enterCalibration:
-      display_print(global_input_string,2,0);
+      display_print(global_input_string,1,0);
       break;
 
     case selectTeam: 
@@ -206,13 +206,13 @@ void display_enter_state(){
       display_print(F("Time left:"), 1, 0);
       display_print(F("Owner:"), 2, 0);
       display_print(DISPLAY_TEAM_NAME[global_owner], 2,8);
-      display_print(F("Press 'C' to change"), 3, 0);
+      display_print(F("Press C to change"), 3, 0);
       break;
 
     case capturing:
       display_print(F("Reinitializing"), 0, 0);      
       display_print(F("Please wait ..."), 1, 0);  
-      display_print(F("Press 'A' to abort"), 3, 0);  
+      display_print(F("Press A to abort"), 3, 0);  
       break;
 
     case selectTeam:
@@ -238,16 +238,29 @@ void display_enter_state(){
       break;
 
     case enterCalibration:
-      display_print(F("Enter calibration"), 0, 0);      
-      display_print(F("code: "), 1, 0);
+      display_print(F("Enter code: "), 0, 0);      
       
-      display_print(F("'C'=clear, 'A'=Abort"), 3, 0);
+      display_print(F("C=clear, A=Abort"), 3, 0);
       break;
 
     case verifyCalibration:
-      display_print(F("Verifyingn"), 1, 0);      
-      display_print(global_input_string,2,0);
-      display_print(F("Pleas wait ..."), 3, 0);
+      display_print(F("Verifyingn"), 0, 0);      
+      display_print(global_input_string,1,0);
+      display_print(F("Please wait ..."), 2, 0);
+      break;
+
+    case verifyFail:
+      display_print(F("WARNING"), 0, 0);
+      display_print(global_input_string,1,0);
+      display_print(F("Is not a valid code"), 2, 0);
+      display_print(F("Press C to continue"), 3, 0);
+      break;
+
+    case verifySucess:
+      display_print(F("Verification sucess"), 0, 0);
+      display_print(global_input_string,1,0);
+      display_print(F("Is a valid code"), 2, 0);
+      display_print(F("Press C to continue"), 3, 0);
       break;
 
 

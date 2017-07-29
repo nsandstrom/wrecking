@@ -186,6 +186,9 @@ void station() {
       break;
 
     case enterCalibration:
+      //go to active if global time < 0
+      if (global_time < 0)
+          global_next_state = active;
 
       //keypad_enter_data returns true when input is full
       if (keypad_enter_data()){
@@ -195,17 +198,40 @@ void station() {
       break;
     
     case verifyCalibration:
-      static int temp = 0;
-      
-      if (temp > 20){
-        global_next_state = idle;
-        temp = 0;
+      //do this if verifycalibration is already runnning
+      if (modem_task.task == verify_calibration_code){
+        if (modem_task.completed()){
+          int reply = (int)modem_task.get_reply();
+          
+          //if verification failed
+          if (reply == 0){
+            global_next_state = verifyFail;
+          }
+          // if verification succeded
+          else {
+            global_next_state = verifySucess;
+          }
+
+          modem_task.clear_task();
+          
+        }
       }
-      else{
-        displayBlink();
-        temp++;
+      else{        
+        // start verifying calibration code
+        if (!modem_task.busy()){
+         modem_task.verifyCalibrationCode(global_input_string);
+        }
       }
 
+      break;
+
+    case verifyFail:
+    case verifySucess:
+      //go to active if global time < 0
+      if (global_time < 0)
+          global_next_state = active;
+
+      keypad_continue();
       break;
   }
 }
@@ -388,6 +414,23 @@ bool keypad_enter_data(){
   }
   return false;
 }
+
+void keypad_continue(){
+  char key = getButton();
+  if (key) // Check for a valid key.
+  {
+    switch (key)
+    {
+      case 'C':
+        global_next_state = idle;
+        break;
+
+      default:
+        break;
+    }
+  }
+}
+
 
 //Updates the right variable with the latest modem data
 //Check if task completed before running this function
