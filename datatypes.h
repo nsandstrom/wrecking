@@ -4,7 +4,9 @@ enum States {
   startCapture = 2,
   capturing = 3,
   selectTeam = 4,
-  changeOwner = 5
+  changeOwner = 5,
+  enterCalibration = 6,
+  verifyCalibration = 7
 };
 
 enum Owner {

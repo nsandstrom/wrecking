@@ -153,7 +153,7 @@ void display_update () {
   {
     case idle:
       if (global_time != 999999){
-        display_print_HHMMSS(global_time, 3, 0);  
+        display_print_HHMMSS(global_time, 2, 0);  
  
         //display_print_value(global_time, 6, 3,0, ' ');
       }
@@ -168,6 +168,10 @@ void display_update () {
     case capturing:
       display_progress(2, (20-global_capture_countdown/(CAPTURE_TIME/20)));
       
+      break;
+
+    case enterCalibration:
+      display_print(global_input_string,2,0);
       break;
 
     case selectTeam: 
@@ -189,10 +193,10 @@ void display_enter_state(){
     case idle:
       display_print(F("ID:"), 0,0);
       display_print(STATION_ID, 0, 3);
-      display_print(F("NO COMMUNICATION"), 1, 2);
-      display_print(F("Next COM-WIN:"), 2,0);
+      display_print(F("Next COM-WIN:"), 1,0);
       if (global_time == 999999)
-        display_print(F("UNKNOWN"), 3,0);
+        display_print(F("UNKNOWN"), 2,0);
+      display_print(F("Press C to calibrate"), 3,0);
       break;
 
     case active:
@@ -231,6 +235,19 @@ void display_enter_state(){
       display_print(F("Uploading new"), 0, 0);      
       display_print(F("ownership data"), 1, 0);      
       display_print(F("Please wait ..."), 2, 2);      
+      break;
+
+    case enterCalibration:
+      display_print(F("Enter calibration"), 0, 0);      
+      display_print(F("code: "), 1, 0);
+      
+      display_print(F("'C'=clear, 'A'=Abort"), 3, 0);
+      break;
+
+    case verifyCalibration:
+      display_print(F("Verifyingn"), 1, 0);      
+      display_print(global_input_string,2,0);
+      display_print(F("Pleas wait ..."), 3, 0);
       break;
 
 

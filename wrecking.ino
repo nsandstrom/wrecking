@@ -20,6 +20,9 @@ Owner global_owner = neutral;
 States global_state = idle; 
 States global_next_state = idle; 
 
+char global_input_string[9];
+int global_input_pointer = 0;
+
 unsigned long global_loop_start_time = 0;
 unsigned long global_one_second_timer = 0;
 int global_update_boost_timer = 0;
@@ -45,6 +48,8 @@ void setup(){
 
   // make sure the initial state is entered propperly
   update_state();
+
+  reset_global_input();
 }
 
 void get_initial_data(int signalQuality){
@@ -126,6 +131,7 @@ void station() {
           global_next_state = active;
 
       request_timning_information();
+      keypad_idle();
       break;
 
     case active:
@@ -178,6 +184,29 @@ void station() {
         }
       }
       break;
+
+    case enterCalibration:
+
+      //keypad_enter_data returns true when input is full
+      if (keypad_enter_data()){
+        global_next_state = verifyCalibration;
+      }
+
+      break;
+    
+    case verifyCalibration:
+      static int temp = 0;
+      
+      if (temp > 20){
+        global_next_state = idle;
+        temp = 0;
+      }
+      else{
+        displayBlink();
+        temp++;
+      }
+
+      break;
   }
 }
 
@@ -205,6 +234,13 @@ void update_state(){
       break;
 
     case changeOwner:
+      break;
+
+    case enterCalibration:
+      reset_global_input();
+      break;
+
+    default:
       break;
 	}
 
@@ -294,6 +330,65 @@ void keypad_abort_capture(){
   }
 }
 
+void keypad_idle(){
+  char key = getButton();
+  if (key) // Check for a valid key.
+  {
+    switch (key)
+    {
+      case 'C':
+        global_next_state = enterCalibration;
+        break;
+
+      default:
+        break;
+    }
+  }
+}
+
+// function records input via keypad and returns true when input buffer is full
+bool keypad_enter_data(){
+  char key = getButton();
+  if (key) // Check for a valid key.
+  {
+    switch (key)
+    {
+      case '1':
+      case '2':
+      case '3':
+      case '4':
+      case '5':
+      case '6':
+      case '7':
+      case '8':
+      case '9':
+      case '0':
+        global_input_string[global_input_pointer] = key;
+        global_input_pointer++;
+
+        //return true if input is full
+        if (global_input_pointer >= 8){
+          global_input_pointer = 0;
+          return true;
+        }
+        break;
+
+      case 'A':
+        global_next_state = idle;
+        break;
+      case 'C':
+        reset_global_input();
+        break;
+
+      default:
+        break;
+    }
+
+
+  }
+  return false;
+}
+
 //Updates the right variable with the latest modem data
 //Check if task completed before running this function
 void update_with_latest_modem_data(){
@@ -353,6 +448,14 @@ void update_time_blocking(){
   } 
 }
 
+void reset_global_input(){
+  for (int i=0; i < 8; i++){
+    global_input_string[i] = ' ';
+  }
+  // add a zero to act as a string terminator
+  global_input_string[8] = '\0';
+  global_input_pointer = 0;
+}
 
 void request_timning_information(){
   //Update the timing information if modem is not bussy and the intervall is right
