@@ -120,14 +120,14 @@ void Modem_task::setUnderCapture () {
 
 void Modem_task::verifyCalibrationCode (String code) {
 	task = verify_calibration_code;
-	data = owner;
+	data = code;
 	status = New;
 	//change Status and Task
 }
 
 void Modem_task::submitCalibrationCode (String code) {
 	task = submit_calibration_code;
-	data = owner;
+	data = code;
 	status = New;
 	//change Status and Task
 }
