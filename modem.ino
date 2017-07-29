@@ -116,6 +116,10 @@ void modem(){
 		modem_task.begin_task();
 	}
 
+	if (modem_task.task == set_under_capture && modem_task.completed()){
+		modem_task.clear_task();
+	}
+
 	if (GPRS_online){
 		
 		if (modem_task.pending()){
