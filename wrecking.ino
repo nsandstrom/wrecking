@@ -140,6 +140,15 @@ void station() {
       keypad_start_capture();
       break;
 
+    case startCapture:
+      if (!modem_task.busy()){
+        global_next_state = capturing;
+      }
+      else{
+        displayBlink();
+      }
+      break;
+
     case capturing:
       //go to idle if global time > 0
       if (global_time > 0)
@@ -186,15 +195,12 @@ void update_state(){
       leds_reset_broken_sections();
       break;
 
-		case capturing:
-      
-      //make sure modem is not bussy
-      while (!modem_task.busy()){}
-      //start task to notify server that device is being captured
-      modem_task.setOwner(global_owner);
-			
+    case capturing:
       global_capture_countdown = CAPTURE_TIME;
-			break;
+      break;
+
+    case startCapture:
+      break;
 
     case selectTeam:
       leds_turn_off_all();

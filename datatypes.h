@@ -1,9 +1,10 @@
 enum States {
   idle      = 0,
   active    = 1,
-  capturing = 2,
-  selectTeam = 3,
-  changeOwner = 4
+  startCapture = 2,
+  capturing = 3,
+  selectTeam = 4,
+  changeOwner = 5
 };
 
 enum Owner {

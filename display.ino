@@ -327,3 +327,17 @@ void display_progress(byte row, byte progress){
   }
 
 }
+
+void displayBlink(){
+  static bool on = false;
+
+  if (on){
+    display_print("   ",0,0);
+    on = false;
+  }
+  else{
+    display_print("XXX",0,0);
+    on = true;
+  }
+  delay(100);
+}
