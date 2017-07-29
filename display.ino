@@ -1,3 +1,4 @@
+
 /*
    Demo_NHD0420CW-Ax3_SPI.ino
 
@@ -37,26 +38,27 @@
 
 // inslude the SPI library:
 #include <SPI.h>
+#include "teamInfo.h"
 
 
 const byte ROW_N = 4;                 // Number of display rows
 const byte COLUMN_N = 20;             // Number of display columns
 
 //const byte RES = 3;                 // Arduino's pin assigned to the Reset line (optional, can be always high)
-
 const String DISPLAY_SHORT_TEAM_NAME[5] = {"     ",
-                                           "[666]",
-                                           "[CYB]",
-                                           "[CLU]",
-                                           "[HKM]"
+                                           TEAM1SHORT,
+                                           TEAM2SHORT,
+                                           TEAM3SHORT,
+                                           TEAM4SHORT
                                           };
 
 const String DISPLAY_TEAM_NAME[5] =   {"            ",
-                                       "Chaosists   ",
-                                       "CyberCom    ",
-                                       "The Cluster ",
-                                       "Hjortkloe MF"
+                                       TEAM1NAME,
+                                       TEAM2NAME,
+                                       TEAM3NAME,
+                                       TEAM4NAME
                                       };
+
 
 byte new_line[4] = {0x80, 0xA0, 0xC0, 0xE0};               // DDRAM address for each line of the display
 byte rows = 0x08;                     // Display mode: 1/3 lines or 2/4 lines; default 2/4 (0x08)

@@ -229,16 +229,16 @@ void keypad_select_owner(){
     switch (key)
     {
       case '1':
-        global_owner = kaos;
+        global_owner = team1;
         break;
       case '2':
-        global_owner = cybercom;
+        global_owner = team2;
         break;
       case '3':
-        global_owner = klustret;
+        global_owner = team3;
         break;
       case '4':
-        global_owner = hjortkloe;
+        global_owner = team4;
         break;
       default:
         newOwnerSelected = false;
