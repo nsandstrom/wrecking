@@ -7,9 +7,9 @@ enum States {
 };
 
 enum Owner {
-  neutral  	= 0,
-  kaos		= 1,
-  cybercom	= 2,
-  klustret	= 3,
-  hjortkloe = 4
+  neutral = 0,
+  team1	= 1,
+  team2	= 2,
+  team3	= 3,
+  team4 = 4
 };
