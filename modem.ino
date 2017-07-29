@@ -332,6 +332,12 @@ void task_send_data(String data){
 					else if (modem_task.task == set_under_capture){
 						URL = SERVER_URL + (String)STATION_ID + (String)F("/uc");
 					}
+					else if (modem_task.task == verify_calibration_code){
+						URL = SERVER_URL + (String)STATION_ID + (String)F("/vcc?key=") + SERVER_KEY + (String)F(";code=") + data;
+					}
+					else if (modem_task.task == submit_calibration_code){
+						URL = SERVER_URL + (String)STATION_ID + (String)F("/scc?key=") + SERVER_KEY + (String)F(";code=") + data;
+					}
 					DEBUG_PRINT(URL);
 					GPRS.println((String)F("AT+HTTPPARA=\"URL\",\"") + (String)URL + "\"");
 					DEBUG_PRINT(F("printing: HTTPPARA"));
@@ -372,7 +378,7 @@ void task_send_data(String data){
 					GPRS.println(F("AT+HTTPREAD"));
 					DEBUG_PRINT(F("printing: HTTPREAD"));
 					lock_interrupts();
-					if (modem_task.task == set_owner){
+					if (modem_task.task == set_owner || modem_task.task == submit_calibration_code){
 						expectAnswer = Accepted;
 					}
 					else if (modem_task.task == set_under_capture){
