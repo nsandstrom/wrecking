@@ -2,7 +2,7 @@ enum States {
   idle      = 0,
   active    = 1,
   capturing = 2,
-  waitForCoordinates = 3,
+  selectTeam = 3,
   changeOwner = 4
 };
 

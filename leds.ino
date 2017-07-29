@@ -90,7 +90,7 @@ void leds_update() {
       }
       break;
 
-    case waitForCoordinates:
+    case selectTeam:
       break;
 
     default:

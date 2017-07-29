@@ -170,7 +170,7 @@ void display_update () {
       
       break;
 
-    case waitForCoordinates: 
+    case selectTeam: 
       break;
 
     default:
@@ -211,7 +211,7 @@ void display_enter_state(){
       display_print(F("Press 'A' to abort"), 3, 0);  
       break;
 
-    case waitForCoordinates:
+    case selectTeam:
       display_print(F("Select new landing"), 0, 0);      
       display_print(F("zone:"), 1, 0);      
       

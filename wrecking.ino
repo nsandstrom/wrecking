@@ -146,14 +146,14 @@ void station() {
         global_next_state = idle;
 
       else if (global_capture_countdown <= 0)
-        global_next_state = waitForCoordinates;
+        global_next_state = selectTeam;
 
       //check if someone wants to abort the capture
       keypad_abort_capture();
 
       break;
 
-    case waitForCoordinates:
+    case selectTeam:
       keypad_select_owner();
       break;
 
@@ -190,7 +190,7 @@ void update_state(){
 			global_capture_countdown = CAPTURE_TIME;
 			break;
 
-    case waitForCoordinates:
+    case selectTeam:
       leds_turn_off_all();
       break;
 
