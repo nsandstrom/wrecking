@@ -12,7 +12,7 @@
 #define UPDATE_TIME_INTERVAL 60
 #define UPDATE_BOOST_INTERVAL 10
 
-#define CAPTURE_TIME 60
+#define CAPTURE_TIME 20
 
 Modem_task modem_task;
 
@@ -187,7 +187,13 @@ void update_state(){
       break;
 
 		case capturing:
-			global_capture_countdown = CAPTURE_TIME;
+      
+      //make sure modem is not bussy
+      while (!modem_task.busy()){}
+      //start task to notify server that device is being captured
+      modem_task.setOwner(global_owner);
+			
+      global_capture_countdown = CAPTURE_TIME;
 			break;
 
     case selectTeam:
@@ -275,7 +281,7 @@ void keypad_abort_capture(){
     {
       case '*':
       case 'A':
-        global_next_state = active;
+        global_next_state = changeOwner;
         break;
 
       default:
