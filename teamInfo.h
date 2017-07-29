@@ -1,7 +1,7 @@
 // team short must be 5 characters (including bracers)
 #define TEAM1SHORT "[CLU]"
 #define TEAM2SHORT "[NHL]"
-#define TEAM3SHORT "[SHK]"
+#define TEAM3SHORT "[ShK]"
 #define TEAM4SHORT "     "
 
 //team name must be 12 characters

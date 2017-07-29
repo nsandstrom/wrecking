@@ -142,10 +142,8 @@ void station() {
 
     case startCapture:
       if (!modem_task.busy()){
+        modem_task.setUnderCapture();
         global_next_state = capturing;
-      }
-      else{
-        displayBlink();
       }
       break;
 
@@ -270,7 +268,7 @@ void keypad_start_capture(){
     {
       case '*':
       case 'C':
-        global_next_state = capturing;
+        global_next_state = startCapture;
         break;
 
       default:

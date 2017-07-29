@@ -118,6 +118,7 @@ void modem(){
 
 	if (modem_task.task == set_under_capture && modem_task.completed()){
 		modem_task.clear_task();
+
 	}
 
 	if (GPRS_online){
@@ -371,8 +372,11 @@ void task_send_data(String data){
 					GPRS.println(F("AT+HTTPREAD"));
 					DEBUG_PRINT(F("printing: HTTPREAD"));
 					lock_interrupts();
-					if (modem_task.task == set_owner || modem_task.task == set_under_capture){
+					if (modem_task.task == set_owner){
 						expectAnswer = Accepted;
+					}
+					else if (modem_task.task == set_under_capture){
+						expectAnswer = Any;
 					}
 					else{
 						expectAnswer = Number;
