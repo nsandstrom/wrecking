@@ -5,10 +5,10 @@
 #define TEAM4SHORT "     "
 
 //team name must be 12 characters
-#define TEAM1NAME "The Cluster "
-#define TEAM2NAME "Jofa Family "
-#define TEAM3NAME "SnaphaneKlan"
-#define TEAM4NAME "            "
+#define TEAM1NAME "The Cluster  "
+#define TEAM2NAME "Jofa Family  "
+#define TEAM3NAME "SnapphaneKlan"
+#define TEAM4NAME "             "
 
 //team hue
 #define TEAM1HUE 200
