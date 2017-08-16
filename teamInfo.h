@@ -12,6 +12,6 @@
 
 //team hue
 #define TEAM1HUE 200
-#define TEAM2HUE 85
+#define TEAM2HUE 80
 #define TEAM3HUE 0
 #define TEAM4HUE 160

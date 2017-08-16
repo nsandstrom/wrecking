@@ -278,11 +278,11 @@ void update_state(){
 void update_timers(){
   if ((global_loop_start_time - global_one_second_timer) >= ONE_SECOND)
   {
-    if (global_time == 0)
-      update_time_blocking();
-      //global_update_time_timer = UPDATE_TIME_INTERVAL;
-      //request_timning_information();
-
+    if (global_time == 0){
+      //update_time_blocking();
+      global_update_time_timer = UPDATE_TIME_INTERVAL;
+      request_timning_information();
+    }
     else if (global_time == 999999)
       global_time = 999999;
     else if (global_time > 0)
