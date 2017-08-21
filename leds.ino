@@ -55,6 +55,7 @@ void leds_update() {
   switch (global_state)
   {
     case idle:
+    default: 
       if ((global_loop_start_time - led_animate_time) > LED_FADE_INTERVAL)
       {
         leds_fade();
@@ -91,9 +92,6 @@ void leds_update() {
       break;
 
     case selectTeam:
-      break;
-
-    default:
       break;
   }
 

@@ -18,7 +18,8 @@ Modem_task modem_task;
 
 Owner global_owner = neutral;
 States global_state = idle; 
-States global_next_state = idle; 
+States global_next_state = idle;
+
 
 char global_input_string[9];
 int global_input_pointer = 0;
@@ -275,10 +276,13 @@ void update_state(){
 }
 
 void update_timers(){
-  if ((global_loop_start_time - global_one_second_timer) > ONE_SECOND)
+  if ((global_loop_start_time - global_one_second_timer) >= ONE_SECOND)
   {
-    if (global_time == 0)
-      update_time_blocking();
+    if (global_time == 0){
+      //update_time_blocking();
+      global_update_time_timer = UPDATE_TIME_INTERVAL;
+      request_timning_information();
+    }
     else if (global_time == 999999)
       global_time = 999999;
     else if (global_time > 0)
@@ -372,7 +376,7 @@ void keypad_idle(){
   }
 }
 
-// function records input via keypad and returns true when input buffer is full
+// function records input via keypad and returns true on C
 bool keypad_enter_data(){
   char key = getButton();
   if (key) // Check for a valid key.
@@ -395,7 +399,7 @@ bool keypad_enter_data(){
         //return true if input is full
         if (global_input_pointer >= 8){
           global_input_pointer = 0;
-          return true;
+          
         }
         break;
 
@@ -403,7 +407,9 @@ bool keypad_enter_data(){
         global_next_state = idle;
         break;
       case 'C':
-        reset_global_input();
+        //only return true if inputs first element is not empty
+        if (global_input_string[0] != '\0')
+          return true;
         break;
 
       default:
@@ -473,8 +479,8 @@ void update_time_blocking(){
   while (!update_completed){
     //start a new task if modem not busy
     if (!modem_task.busy()) {
-      display_print(F("Timing information"), 1, 0);
       modem_task.getTime();
+      display_blinkText("getting time", 3,10);
     }
     //check task results if modem completed
     else if (modem_task.completed()){
@@ -486,14 +492,16 @@ void update_time_blocking(){
       while (!modem_task.completed())
       {
         modem();
+        display_blinkText("modem", 3,0);
       }
     }
+
   } 
 }
 
 void reset_global_input(){
   for (int i=0; i < 8; i++){
-    global_input_string[i] = ' ';
+    global_input_string[i] = '*';
   }
   // add a zero to act as a string terminator
   global_input_string[8] = '\0';
@@ -502,7 +510,7 @@ void reset_global_input(){
 
 void request_timning_information(){
   //Update the timing information if modem is not bussy and the intervall is right
-  if (!modem_task.busy() && global_update_time_timer > UPDATE_TIME_INTERVAL)
+  if (!modem_task.busy() && global_update_time_timer >= UPDATE_TIME_INTERVAL)
   {
     modem_task.getTime();
 
@@ -512,7 +520,7 @@ void request_timning_information(){
 }
 void request_boost_information(){
   //Update the timing information if modem is not bussy and the intervall is right
-  if (!modem_task.busy() && global_update_boost_timer > UPDATE_BOOST_INTERVAL)
+  if (!modem_task.busy() && global_update_boost_timer >= UPDATE_BOOST_INTERVAL)
   {
     modem_task.getBoost();
 

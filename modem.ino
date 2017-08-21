@@ -143,7 +143,7 @@ void task_connect(){
 	String apnSet;
 
 	if (wait_until < millis() && !allowLeds ){
-	
+
 		// DEBUG_PRINT((String)F("expexts answer: ") + (String)expectAnswer);
 		DEBUG_PRINT((String)F("state: ") + (String)state);
 
@@ -276,7 +276,15 @@ void task_send_data(String data){
 	String URL;
 
 	if (wait_until < millis() ){
-	
+		//display debug information
+		/*
+		display_print("State: ",0,0);
+		display_print_value(state, 3, 0, 10, ' ');
+		
+		display_print("task: ",1,0);
+		display_print_value(modem_task.task, 3, 1, 10, ' ');
+		*/
+		
 		// DEBUG_PRINT((String)F("expexts answer: ") + (String)expectAnswer);
 		DEBUG_PRINT((String)F("state: ") + (String)state);
 		int answer = readBack(expectAnswer);

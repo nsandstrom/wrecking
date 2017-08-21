@@ -40,6 +40,8 @@
 #include <SPI.h>
 #include "teamInfo.h"
 
+#define BLINK_TIME 500
+
 
 const byte ROW_N = 4;                 // Number of display rows
 const byte COLUMN_N = 20;             // Number of display columns
@@ -62,6 +64,9 @@ const String DISPLAY_TEAM_NAME[5] =   {"            ",
 
 byte new_line[4] = {0x80, 0xA0, 0xC0, 0xE0};               // DDRAM address for each line of the display
 byte rows = 0x08;                     // Display mode: 1/3 lines or 2/4 lines; default 2/4 (0x08)
+
+unsigned long display_blink_timer =0;
+bool display_blink = true;
 
 void init_display(void)                      // INITIAL SETUP
 {
@@ -161,24 +166,49 @@ void display_update () {
       break;
 
     case active:
-      display_print_value(global_boost, 3, 0, 16, ' ');
+      //blink boost if it deviates from 100
+      if (global_boost != 100){
+        if (display_blink){
+          display_print_value(global_boost, 3, 0, 16, ' ');
+          display_print(F("%"), 0, 19);
+        }
+        else {
+          display_print(F("    "), 0, 16);
+        }
+      }
+      else{
+        display_print_value(global_boost, 3, 0, 16, ' ');
+        display_print(F("%"), 0, 19);
+      }
       display_print_HHMMSS(global_time*-1, 1, 11);  
       break;
 
     case capturing:
+      display_blinkText(F("Reinitializing"), 0, 0);
+
       display_progress(2, (20-global_capture_countdown/(CAPTURE_TIME/20)));
       
       break;
 
     case enterCalibration:
-      display_print(global_input_string,1,0);
+      display_global_input(1, 0, false);
       break;
 
     case selectTeam: 
       break;
 
+    case verifyCalibration:
+      display_blinkText(F("Verifying"), 0, 0);
+      break;
+
     default:
       break;
+  }
+
+  if ((global_loop_start_time - display_blink_timer) >= BLINK_TIME)
+  {
+    display_blink = !display_blink;
+    display_blink_timer = global_loop_start_time;
   }
 }
 
@@ -187,6 +217,8 @@ void display_enter_state(){
 
   command(0x01);        // Clear display
   delay(2);             // After a clear display, a minimum pause of 1-2 ms is required
+  // turn offcursor
+  command(0x0C);        // display ON, cursor off, blink off
 
   switch(global_state)
   {
@@ -205,7 +237,7 @@ void display_enter_state(){
       display_print(F("Output:    %"), 0, 8);
       display_print(F("Time left:"), 1, 0);
       display_print(F("Owner:"), 2, 0);
-      display_print(DISPLAY_TEAM_NAME[global_owner], 2,8);
+      display_print(DISPLAY_TEAM_NAME[global_owner], 2,7);
       display_print(F("Press C to change"), 3, 0);
       break;
 
@@ -239,18 +271,17 @@ void display_enter_state(){
 
     case enterCalibration:
       display_print(F("Enter code: "), 0, 0);      
-      
-      display_print(F("C=clear, A=Abort"), 3, 0);
+      display_print(F("C=Confirm, A=Abort"), 3, 0);
+      display_global_input(1,0, true);
       break;
 
     case verifyCalibration:
-      display_print(F("Verifyingn"), 0, 0);      
       display_print(global_input_string,1,0);
       display_print(F("Please wait ..."), 2, 0);
       break;
 
     case verifyFail:
-      display_print(F("WARNING"), 0, 0);
+      display_print(F("ERROR"), 0, 0);
       display_print(global_input_string,1,0);
       display_print(F("Is not a valid code"), 2, 0);
       display_print(F("Press C to continue"), 3, 0);
@@ -267,6 +298,10 @@ void display_enter_state(){
     default:
       break;
   }
+
+  //reset the blinking so text is always showed state changes
+  display_blink = true;
+  display_blink_timer = global_loop_start_time;
 }
 
 // _______________________________________________________________________________________
@@ -358,16 +393,31 @@ void display_progress(byte row, byte progress){
 
 }
 
-void displayBlink(){
-  static bool on = false;
+// displays blinking text, should be put in display update
+void display_blinkText(String text, byte row, byte start){
+  byte text_length = text.length();
+  command(new_line[row]+start);           //  moves the cursor to the first column of that line
+  if (display_blink){
+    for (byte c = 0; c < text_length; c++)  // One character at a time,
+    {
+      data(text[c]); 
+    }
+  }
+  else {
+        for (byte c = 0; c < text_length; c++)  // One character at a time,
+    {
+      data(' '); 
+    }
+  }
+}
 
-  if (on){
-    display_print("   ",0,0);
-    on = false;
+void display_global_input(byte row, byte col, bool forceDraw){
+  static int last_input_pointer = 0;
+  if ((last_input_pointer != global_input_pointer) or (forceDraw)){
+    command(0x0C);        // display ON, cursor off, blink off
+    display_print(global_input_string,row,col);
+    command(new_line[1]+global_input_pointer);           //  moves the cursor to the first column of that line
+    command(0x0F);        // display ON, cursor ON, blink ON
+    last_input_pointer = global_input_pointer;
   }
-  else{
-    display_print("XXX",0,0);
-    on = true;
-  }
-  delay(100);
 }
