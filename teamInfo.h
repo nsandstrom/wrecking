@@ -15,3 +15,5 @@
 #define TEAM2HUE 80
 #define TEAM3HUE 0
 #define TEAM4HUE 160
+
+#define SPECIALTEAM 4

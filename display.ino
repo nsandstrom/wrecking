@@ -166,23 +166,33 @@ void display_update () {
       break;
 
     case active:
-      //blink boost if it deviates from 100
-      if (global_boost != 100){
-        if (display_blink){
+      // station is owned by special team
+      if (global_owner == SPECIALTEAM){
+        display_blinkText(F("     ATTENTION!     "), 0, 0);
+        display_blinkText(F(" Lantern siezed by: "), 1, 0);
+        display_blinkText(F("        403         "), 2, 0);
+        display_print(F("DO NOT PRESS C "), 3, 0);
+      }
+      //else continue as normal
+      else{
+        //blink boost if it deviates from 100
+        if (global_boost != 100){
+          if (display_blink){
+            display_print_value(global_boost, 3, 0, 16, ' ');
+            display_print(F("%"), 0, 19);
+          }
+          else {
+            display_print(F("    "), 0, 16);
+          }
+        }
+        else{
           display_print_value(global_boost, 3, 0, 16, ' ');
           display_print(F("%"), 0, 19);
         }
-        else {
-          display_print(F("    "), 0, 16);
-        }
+        display_print(DISPLAY_TEAM_NAME[global_owner], 2,7);
+
+        display_print_HHMMSS(global_time*-1, 1, 11);  
       }
-      else{
-        display_print_value(global_boost, 3, 0, 16, ' ');
-        display_print(F("%"), 0, 19);
-      }
-      display_print(DISPLAY_TEAM_NAME[global_owner], 2,7);
-      
-      display_print_HHMMSS(global_time*-1, 1, 11);  
       break;
 
     case capturing:
