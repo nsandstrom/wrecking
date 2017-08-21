@@ -11,6 +11,7 @@
 #define ONE_SECOND 1000
 #define UPDATE_TIME_INTERVAL 60
 #define UPDATE_BOOST_INTERVAL 10
+#define UPDATE_OWNER_INTERVAL 30
 
 #define CAPTURE_TIME 20
 
@@ -28,6 +29,7 @@ unsigned long global_loop_start_time = 0;
 unsigned long global_one_second_timer = 0;
 int global_update_boost_timer = 0;
 int global_update_time_timer = 0;
+int global_update_owner_timer = 0;
 
 long global_time = 0;
 int global_capture_countdown = 0;
@@ -142,6 +144,7 @@ void station() {
 
       request_timning_information();
       request_boost_information();
+      request_owner_information();
 
       //check if someone wants to capture the station
       keypad_start_capture();
@@ -293,6 +296,7 @@ void update_timers(){
     global_capture_countdown --;
     global_update_boost_timer++;
     global_update_time_timer++;
+    global_update_owner_timer++;
     global_one_second_timer = global_loop_start_time;
   }
 }
@@ -526,5 +530,16 @@ void request_boost_information(){
 
     //reset the timer
     global_update_boost_timer = 0;
+  }
+}
+
+void request_owner_information(){
+  //Update the timing information if modem is not bussy and the intervall is right
+  if (!modem_task.busy() && global_update_owner_timer >= UPDATE_OWNER_INTERVAL)
+  {
+    modem_task.getOwner();
+
+    //reset the timer
+    global_update_owner_timer = 0;
   }
 }

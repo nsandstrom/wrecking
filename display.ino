@@ -180,6 +180,8 @@ void display_update () {
         display_print_value(global_boost, 3, 0, 16, ' ');
         display_print(F("%"), 0, 19);
       }
+      display_print(DISPLAY_TEAM_NAME[global_owner], 2,7);
+      
       display_print_HHMMSS(global_time*-1, 1, 11);  
       break;
 
@@ -237,7 +239,7 @@ void display_enter_state(){
       display_print(F("Output:    %"), 0, 8);
       display_print(F("Time left:"), 1, 0);
       display_print(F("Owner:"), 2, 0);
-      display_print(DISPLAY_TEAM_NAME[global_owner], 2,7);
+      
       display_print(F("Press C to change"), 3, 0);
       break;
 
