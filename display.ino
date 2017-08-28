@@ -171,7 +171,6 @@ void display_update () {
         display_blinkText(F("     ATTENTION!     "), 0, 0);
         display_blinkText(F(" Lantern siezed by: "), 1, 0);
         display_blinkText(F("        403         "), 2, 0);
-        display_print(F("DO NOT PRESS C "), 3, 0);
       }
       //else continue as normal
       else{

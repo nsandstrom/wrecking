@@ -13,7 +13,7 @@
 #define UPDATE_BOOST_INTERVAL 10
 #define UPDATE_OWNER_INTERVAL 30
 
-#define CAPTURE_TIME 20
+#define CAPTURE_TIME 60
 
 Modem_task modem_task;
 

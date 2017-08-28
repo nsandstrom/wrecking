@@ -64,6 +64,7 @@ void leds_update() {
       break;
 
     case active:
+    case startCapture:
       if ((global_loop_start_time - led_animate_time) > LED_UPDATE_INTERVAL)
       {
         leds_animate_running();
