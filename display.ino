@@ -47,14 +47,14 @@ const byte ROW_N = 4;                 // Number of display rows
 const byte COLUMN_N = 20;             // Number of display columns
 
 //const byte RES = 3;                 // Arduino's pin assigned to the Reset line (optional, can be always high)
-const String DISPLAY_SHORT_TEAM_NAME[5] = {"     ",
+const PROGMEM char DISPLAY_SHORT_TEAM_NAME[5][6] = {"     ",
                                            TEAM1SHORT,
                                            TEAM2SHORT,
                                            TEAM3SHORT,
                                            TEAM4SHORT
                                           };
 
-const String DISPLAY_TEAM_NAME[5] =   {"            ",
+const PROGMEM char DISPLAY_TEAM_NAME[5][14] =   {"-            ",
                                        TEAM1NAME,
                                        TEAM2NAME,
                                        TEAM3NAME,
@@ -188,7 +188,7 @@ void display_update () {
           display_print_value(global_boost, 3, 0, 16, ' ');
           display_print(F("%"), 0, 19);
         }
-        display_print(DISPLAY_TEAM_NAME[global_owner], 2,7);
+        display_print((__FlashStringHelper*)DISPLAY_TEAM_NAME[global_owner], 2,7);
 
         display_print_HHMMSS(global_time*-1, 1, 11);  
       }
@@ -262,14 +262,14 @@ void display_enter_state(){
       display_print(F("Select new owner:"), 0, 0);
       
       display_print("1.", 2, 0);
-      display_print(DISPLAY_SHORT_TEAM_NAME[1], 2,2);     
+      display_print((__FlashStringHelper*)DISPLAY_SHORT_TEAM_NAME[1], 2,2);     
       display_print("2.", 2, 10);
-      display_print(DISPLAY_SHORT_TEAM_NAME[2], 2,12);
+      display_print((__FlashStringHelper*)DISPLAY_SHORT_TEAM_NAME[2], 2,12);
 
       display_print("3.", 3, 0);
-      display_print(DISPLAY_SHORT_TEAM_NAME[3], 3,2);
+      display_print((__FlashStringHelper*)DISPLAY_SHORT_TEAM_NAME[3], 3,2);
       display_print("4.", 3, 10);
-      display_print(DISPLAY_SHORT_TEAM_NAME[4], 3,12);
+      display_print((__FlashStringHelper*)DISPLAY_SHORT_TEAM_NAME[4], 3,12);
 
 
       break;
