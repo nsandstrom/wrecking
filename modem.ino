@@ -273,7 +273,7 @@ void task_send_data(String data){
 	static Gprs_responses expectAnswer = None;
 	static unsigned long wait_until = 0, timeout = 0;
 	// String URL = SERVER_URL + "/2/so?key=" + SERVER_KEY + ";owner=" + (String)3;
-	String URL;
+	String slug;
 
 	if (wait_until < millis() ){
 		//display debug information
@@ -326,28 +326,35 @@ void task_send_data(String data){
 				case 4:		//HTTP params
 					readBack(None);
 					if (modem_task.task == set_owner){
-						URL = SERVER_URL + (String)STATION_ID + (String)F("/so?key=") + SERVER_KEY + (String)F(";owner=") + data;
+						slug = (String)STATION_ID + (String)F("/so?key=") + SERVER_KEY + (String)F(";owner=") + data;
 					}
 					else if (modem_task.task == get_boost){
-						URL = SERVER_URL + (String)STATION_ID + (String)F("/gb");
+						slug = (String)STATION_ID + (String)F("/gb");
 					}
 					else if (modem_task.task == get_owner){
-						URL = SERVER_URL + (String)STATION_ID + (String)F("/go");
+						slug = (String)STATION_ID + (String)F("/go");
 					}
 					else if (modem_task.task == get_time){
-						URL = SERVER_URL + (String)STATION_ID + (String)F("/tts");
+						slug = (String)STATION_ID + (String)F("/tts");
 					}
 					else if (modem_task.task == set_under_capture){
-						URL = SERVER_URL + (String)STATION_ID + (String)F("/uc");
+						slug = (String)STATION_ID + (String)F("/uc");
 					}
 					else if (modem_task.task == verify_calibration_code){
-						URL = SERVER_URL + (String)STATION_ID + (String)F("/vcc?key=") + SERVER_KEY + (String)F(";code=") + data;
+						//slug = (String)STATION_ID + (String)F("/vcc?key=") + SERVER_KEY + (String)F(";code=") + data;
 					}
 					else if (modem_task.task == submit_calibration_code){
-						URL = SERVER_URL + (String)STATION_ID + (String)F("/scc?key=") + SERVER_KEY + (String)F(";code=") + data;
+						//slug = (String)STATION_ID + (String)F("/scc?key=") + SERVER_KEY + (String)F(";code=") + data;
 					}
-					DEBUG_PRINT(URL);
-					GPRS.println((String)F("AT+HTTPPARA=\"URL\",\"") + (String)URL + "\"");
+
+					GPRS.print((String)F("AT+HTTPPARA=\"URL\",\""));
+          GPRS.print((__FlashStringHelper*)serverURL);
+          GPRS.println((String)slug + "\"");
+          
+          Serial.print((String)F("AT+HTTPPARA=\"URL\",\""));     
+          Serial.print((__FlashStringHelper*)serverURL);
+          Serial.println((String)slug + "\"");
+
 					DEBUG_PRINT(F("printing: HTTPPARA"));
 					lock_interrupts();
 					expectAnswer = Any;
@@ -526,19 +533,20 @@ int readBack(int expected){
 			response[buffer_count++]=GPRS.read();     // writing data into array
 			if(buffer_count == 64)break;
 		}
-		DEBUG_PRINT((String)F("count after response ") + (String)buffer_count);            // if no data transmission ends, write buffer to hardware serial port
-		DEBUG_PRINT("Response: " + (String)response);            // if no data transmission ends, write buffer to hardware serial port
-		// DEBUG_PRINT(F("response of some kind"));            // if no data transmission ends, write buffer to hardware serial port
-		if (expected == Any){
+		DEBUG_PRINT((String)F("count after response: ") + (String)buffer_count);            // if no data transmission ends, write buffer to hardware serial port
+		DEBUG_PRINT(response);            // if no data transmission ends, write buffer to hardware serial port
+		
+    // DEBUG_PRINT(F("response of some kind"));            // if no data transmission ends, write buffer to hardware serial port
+    if (expected == Any){
 			responded = 1;
 		}
 		if ( expected == OK && strstr(response, "OK") ){
 			responded = 1;
-			DEBUG_PRINT(F("this was an OK command"));
+			DEBUG_PRINT(F("OK command"));
 		}
 		if ( expected == Accepted && strstr(response, "Ok") ){
 			responded = 1;
-			DEBUG_PRINT(F("this was an Accepted command"));
+			DEBUG_PRINT(F("Accepted command"));
 		}
 		if ( (expected == OK || expected == Number ) && strstr(response, "ERROR") ){
 			responded = 2;
@@ -565,7 +573,7 @@ int readBack(int expected){
 			DEBUG_PRINT("split:" + (String)split);
 			// modem_task.set_reply((String)response.substring(3));
 			responded = 1;
-			DEBUG_PRINT("stored answer: " + (String)modem_task.get_reply());
+			DEBUG_PRINT((String)F("stored answer: ") + (String)modem_task.get_reply());
 		}
 		buffer_count = 0;                       // set counter of while loop to zero
 	}
@@ -581,6 +589,6 @@ void lock_interrupts(){
 void unlock_interrupts(){
 	if (global_interrupts_locked){
 		global_interrupts_locked = false;
-		DEBUG_PRINT("Interrupts UNlocked. -----------------> " + (String)(millis() - lockTime));
+		DEBUG_PRINT((String)F("Interrupts UNlocked. -----------------> ") + (String)(millis() - lockTime));
 	}
 }
