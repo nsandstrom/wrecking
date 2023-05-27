@@ -13,12 +13,12 @@
 #define UPDATE_BOOST_INTERVAL 10
 #define UPDATE_OWNER_INTERVAL 30
 
-#define CAPTURE_TIME 60
+#define CAPTURE_TIME  60
 
 Modem_task modem_task;
 
 Owner global_owner = neutral;
-States global_state = idle; 
+States global_state = idle;
 States global_next_state = idle;
 
 
@@ -39,13 +39,13 @@ int global_input_coordinates = 0;
 
 bool global_interrupts_locked = false;
 
-void setup(){
+void setup() {
   int signalQuality = 0;
 
-	init_display();
-	init_leds();
-	init_keypad();
-	signalQuality = init_modem();
+  init_display();
+  init_leds();
+  init_keypad();
+  signalQuality = init_modem();
 
   get_initial_data(signalQuality);
 
@@ -55,24 +55,22 @@ void setup(){
   reset_global_input();
 }
 
-void get_initial_data(int signalQuality){
+void get_initial_data(int signalQuality) {
   char downloadItem = 0;
 
   display_dwlding_data(signalQuality);
 
   //run this until all data is downloaded
-  while (downloadItem < 3){
-    
+  while (downloadItem < 3) {
+
     //start a new task if modem not busy
-    if (!modem_task.busy()) 
-    {
-      switch (downloadItem)
-      {
+    if (!modem_task.busy()) {
+      switch (downloadItem) {
         case 0:
           display_print(F("Boost level"), 1, 0);
           modem_task.getBoost();
           break;
-          
+
         case 1:
           display_print(F("Ownership status  "), 1, 0);
           modem_task.getOwner();
@@ -83,55 +81,52 @@ void get_initial_data(int signalQuality){
           modem_task.getTime();
           break;
       }
-      
+
     }
     //check task results if modem completed
-    else if (modem_task.completed()){
+    else if (modem_task.completed()) {
       update_with_latest_modem_data();
       downloadItem++;
-    }
-    else
-    {
+    } else {
       //wait untill task is completed
-      while (!modem_task.completed())
-      {
+      while (!modem_task.completed()) {
         modem();
       }
-    } 
+    }
   }
 }
 
 
-void loop(){
-	// Sample the loop start time
-	global_loop_start_time = millis();
-	
-	update_timers();
-	station();
-	modem();
-	display_update();
-	leds_update();
+void loop() {
+  // Sample the loop start time
+  global_loop_start_time = millis();
+
+  update_timers();
+  station();
+  modem();
+  display_update();
+  leds_update();
 
 
   //check task results if modem has completed a task
-  if (modem_task.completed()){
+  if (modem_task.completed()) {
     update_with_latest_modem_data();
   }
 
   //if next state is different from the current state, set the new state
-  if (global_next_state != global_state){
+  if (global_next_state != global_state) {
     update_state();
   }
 }
 
 
 void station() {
-  switch (global_state)
-  {
+  //display_print((String)"S"+(String)global_state, 0, 5);
+  switch (global_state) {
     case idle:
       //go to active if global time < 0
       if (global_time < 0)
-          global_next_state = active;
+        global_next_state = active;
 
       request_timning_information();
       keypad_idle();
@@ -151,7 +146,7 @@ void station() {
       break;
 
     case startCapture:
-      if (!modem_task.busy()){
+      if (!modem_task.busy()) {
         modem_task.setUnderCapture();
         global_next_state = capturing;
       }
@@ -175,16 +170,15 @@ void station() {
       break;
 
     case changeOwner:
-      if (modem_task.task == set_owner){
-        if (modem_task.completed()){
+      if (modem_task.task == set_owner) {
+        if (modem_task.completed()) {
           modem_task.clear_task();
-        	global_next_state = active;
+          global_next_state = active;
         }
-      }
-      else{        
+      } else {
         // start owner change using task modem_task
-        if (!modem_task.busy()){
-         modem_task.setOwner(global_owner);
+        if (!modem_task.busy()) {
+          modem_task.setOwner(global_owner);
         }
       }
       break;
@@ -192,23 +186,23 @@ void station() {
     case enterCalibration:
       //go to active if global time < 0
       if (global_time < 0)
-          global_next_state = active;
+        global_next_state = active;
 
       //keypad_enter_data returns true when input is full
-      if (keypad_enter_data()){
+      if (keypad_enter_data()) {
         global_next_state = verifyCalibration;
       }
 
       break;
-    
+
     case verifyCalibration:
       //do this if verifycalibration is already runnning
-      if (modem_task.task == verify_calibration_code){
-        if (modem_task.completed()){
+      if (modem_task.task == verify_calibration_code) {
+        if (modem_task.completed()) {
           int reply = (int)modem_task.get_reply();
-          
+
           //if verification failed
-          if (reply == 0){
+          if (reply == 0) {
             global_next_state = verifyFail;
           }
           // if verification succeded
@@ -217,13 +211,11 @@ void station() {
           }
 
           modem_task.clear_task();
-          
         }
-      }
-      else{        
+      } else {
         // start verifying calibration code
-        if (!modem_task.busy()){
-         modem_task.verifyCalibrationCode(global_input_string);
+        if (!modem_task.busy()) {
+          modem_task.verifyCalibrationCode(global_input_string);
         }
       }
 
@@ -233,18 +225,17 @@ void station() {
     case verifySucess:
       //go to active if global time < 0
       if (global_time < 0)
-          global_next_state = active;
+        global_next_state = active;
 
       keypad_continue();
       break;
   }
 }
 
-void update_state(){
-	
-	//do state specific enter tasks
-	switch (global_next_state)
-	{
+void update_state() {
+
+  //do state specific enter tasks
+  switch (global_next_state) {
     case idle:
       break;
 
@@ -272,28 +263,26 @@ void update_state(){
 
     default:
       break;
-	}
+  }
 
   global_state = global_next_state;
   display_enter_state();
 }
 
-void update_timers(){
-  if ((global_loop_start_time - global_one_second_timer) >= ONE_SECOND)
-  {
-    if (global_time == 0){
+void update_timers() {
+  if ((global_loop_start_time - global_one_second_timer) >= ONE_SECOND) {
+    if (global_time == 0) {
       //update_time_blocking();
       global_update_time_timer = UPDATE_TIME_INTERVAL;
       request_timning_information();
-    }
-    else if (global_time == 999999)
+    } else if (global_time == 999999)
       global_time = 999999;
     else if (global_time > 0)
-      global_time --;
+      global_time--;
     else if (global_time < 0)
-      global_time ++;
+      global_time++;
 
-    global_capture_countdown --;
+    global_capture_countdown--;
     global_update_boost_timer++;
     global_update_time_timer++;
     global_update_owner_timer++;
@@ -301,13 +290,12 @@ void update_timers(){
   }
 }
 
-void keypad_select_owner(){
+void keypad_select_owner() {
   char key = getButton();
   bool newOwnerSelected = true;
-  if (key) // Check for a valid key.
+  if (key)  // Check for a valid key.
   {
-    switch (key)
-    {
+    switch (key) {
       case '1':
         global_owner = team1;
         break;
@@ -324,18 +312,17 @@ void keypad_select_owner(){
         newOwnerSelected = false;
         break;
     }
-    if (newOwnerSelected){
+    if (newOwnerSelected) {
       global_next_state = changeOwner;
     }
   }
 }
 
-void keypad_start_capture(){
+void keypad_start_capture() {
   char key = getButton();
-  if (key) // Check for a valid key.
+  if (key)  // Check for a valid key.
   {
-    switch (key)
-    {
+    switch (key) {
       case '*':
       case 'C':
         global_next_state = startCapture;
@@ -347,12 +334,11 @@ void keypad_start_capture(){
   }
 }
 
-void keypad_abort_capture(){
+void keypad_abort_capture() {
   char key = getButton();
-  if (key) // Check for a valid key.
+  if (key)  // Check for a valid key.
   {
-    switch (key)
-    {
+    switch (key) {
       case '*':
       case 'A':
         global_next_state = changeOwner;
@@ -364,12 +350,12 @@ void keypad_abort_capture(){
   }
 }
 
-void keypad_idle(){
+void keypad_idle() {
   char key = getButton();
-  if (key) // Check for a valid key.
+  //display_print((String)key, 0, 16);
+  if (key)  // Check for a valid key.
   {
-    switch (key)
-    {
+    switch (key) {
       case 'C':
         global_next_state = enterCalibration;
         break;
@@ -381,12 +367,11 @@ void keypad_idle(){
 }
 
 // function records input via keypad and returns true on C
-bool keypad_enter_data(){
+bool keypad_enter_data() {
   char key = getButton();
-  if (key) // Check for a valid key.
+  if (key)  // Check for a valid key.
   {
-    switch (key)
-    {
+    switch (key) {
       case '1':
       case '2':
       case '3':
@@ -401,9 +386,8 @@ bool keypad_enter_data(){
         global_input_pointer++;
 
         //return true if input is full
-        if (global_input_pointer >= 8){
+        if (global_input_pointer >= 8) {
           global_input_pointer = 0;
-          
         }
         break;
 
@@ -419,18 +403,15 @@ bool keypad_enter_data(){
       default:
         break;
     }
-
-
   }
   return false;
 }
 
-void keypad_continue(){
+void keypad_continue() {
   char key = getButton();
-  if (key) // Check for a valid key.
+  if (key)  // Check for a valid key.
   {
-    switch (key)
-    {
+    switch (key) {
       case 'C':
         global_next_state = idle;
         break;
@@ -444,11 +425,10 @@ void keypad_continue(){
 
 //Updates the right variable with the latest modem data
 //Check if task completed before running this function
-void update_with_latest_modem_data(){
+void update_with_latest_modem_data() {
 
   //put the data where it belongs
-  switch (modem_task.task)
-  {
+  switch (modem_task.task) {
     case get_boost:
       global_boost = (int)modem_task.get_reply();
       //clear the task NOTE, THIS MUST BE ON EVERY CASE
@@ -475,36 +455,33 @@ void update_with_latest_modem_data(){
 
 //Updates the right variable with the latest modem data
 //Check if task completed before running this function
-void update_time_blocking(){
+void update_time_blocking() {
   bool update_completed = false;
   display_timeing_update();
-  
+
   //run untill update completed
-  while (!update_completed){
+  while (!update_completed) {
     //start a new task if modem not busy
     if (!modem_task.busy()) {
       modem_task.getTime();
-      display_blinkText("getting time", 3,10);
+      display_blinkText("getting time", 3, 10);
     }
     //check task results if modem completed
-    else if (modem_task.completed()){
+    else if (modem_task.completed()) {
       update_with_latest_modem_data();
       update_completed = true;
-    }
-    else {
+    } else {
       //wait untill task is completed
-      while (!modem_task.completed())
-      {
+      while (!modem_task.completed()) {
         modem();
-        display_blinkText("modem", 3,0);
+        display_blinkText("modem", 3, 0);
       }
     }
-
-  } 
+  }
 }
 
-void reset_global_input(){
-  for (int i=0; i < 8; i++){
+void reset_global_input() {
+  for (int i = 0; i < 8; i++) {
     global_input_string[i] = '*';
   }
   // add a zero to act as a string terminator
@@ -512,20 +489,18 @@ void reset_global_input(){
   global_input_pointer = 0;
 }
 
-void request_timning_information(){
+void request_timning_information() {
   //Update the timing information if modem is not bussy and the intervall is right
-  if (!modem_task.busy() && global_update_time_timer >= UPDATE_TIME_INTERVAL)
-  {
+  if (!modem_task.busy() && global_update_time_timer >= UPDATE_TIME_INTERVAL) {
     modem_task.getTime();
 
     //reset the timer
     global_update_time_timer = 0;
   }
 }
-void request_boost_information(){
+void request_boost_information() {
   //Update the timing information if modem is not bussy and the intervall is right
-  if (!modem_task.busy() && global_update_boost_timer >= UPDATE_BOOST_INTERVAL)
-  {
+  if (!modem_task.busy() && global_update_boost_timer >= UPDATE_BOOST_INTERVAL) {
     modem_task.getBoost();
 
     //reset the timer
@@ -533,10 +508,9 @@ void request_boost_information(){
   }
 }
 
-void request_owner_information(){
+void request_owner_information() {
   //Update the timing information if modem is not bussy and the intervall is right
-  if (!modem_task.busy() && global_update_owner_timer >= UPDATE_OWNER_INTERVAL)
-  {
+  if (!modem_task.busy() && global_update_owner_timer >= UPDATE_OWNER_INTERVAL) {
     modem_task.getOwner();
 
     //reset the timer
