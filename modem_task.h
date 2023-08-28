@@ -24,7 +24,7 @@ public:
 	void getTime ();
 	void setUnderCapture ();
 	void verifyCalibrationCode (String code);
-	void submitCalibrationCode (String code);
+//	void submitCalibrationCode (String code);
 	String data;
 	
 	Modem_Tasks task = none;
@@ -125,9 +125,9 @@ void Modem_task::verifyCalibrationCode (String code) {
 	//change Status and Task
 }
 
-void Modem_task::submitCalibrationCode (String code) {
-	task = submit_calibration_code;
-	data = code;
-	status = New;
-	//change Status and Task
-}
+// void Modem_task::submitCalibrationCode (String code) {
+// 	task = submit_calibration_code;
+// 	data = code;
+// 	status = New;
+// 	//change Status and Task
+// }
